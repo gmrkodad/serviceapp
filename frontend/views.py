@@ -30,7 +30,11 @@ def register_provider_page(request):
 # =====================
 
 def customer_home(request):
-    if request.user.is_authenticated and getattr(request.user, "role", None) == "ADMIN":
+    if request.user.is_authenticated and (
+        getattr(request.user, "role", None) == "ADMIN"
+        or request.user.is_staff
+        or request.user.is_superuser
+    ):
         return redirect("/admin-panel/")
     return render(request, "customer_home.html", {
         "show_nav": True

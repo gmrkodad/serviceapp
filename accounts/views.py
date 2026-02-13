@@ -56,9 +56,14 @@ class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        effective_role = (
+            "ADMIN"
+            if request.user.is_staff or request.user.is_superuser
+            else request.user.role
+        )
         return Response({
             "username": request.user.username,
-            "role": request.user.role
+            "role": effective_role
         })
     
 
