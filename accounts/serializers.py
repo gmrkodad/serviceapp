@@ -5,14 +5,12 @@ from .models import User,Notification
 
 class CustomerSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    city = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'city']
+        fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        city = validated_data.pop("city", "")
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email'),
@@ -20,9 +18,7 @@ class CustomerSignupSerializer(serializers.ModelSerializer):
             role=User.Role.CUSTOMER
         )
         from .models import CustomerProfile
-        CustomerProfile.objects.get_or_create(user=user, defaults={
-            "city": city,
-        })
+        CustomerProfile.objects.get_or_create(user=user)
         return user
 
 
@@ -37,7 +33,7 @@ class ProviderSignupSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
-    city = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    city = serializers.CharField(write_only=True, required=True, allow_blank=False)
 
     class Meta:
         model = User

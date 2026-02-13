@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
 import json
 from urllib.request import urlopen, Request
-from .models import User, Notification, ProviderProfile
+from .models import User, Notification, ProviderProfile, CustomerProfile
 from .serializers import ProviderListSerializer
 from .serializers import CustomerSignupSerializer, ProviderSignupSerializer
 from .serializers import NotificationSerializer
@@ -223,3 +223,20 @@ class IpLocationAPIView(APIView):
             })
         except Exception:
             return JsonResponse({"city": "", "country": ""})
+
+
+class CustomerCityAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role != "CUSTOMER":
+            return Response({"message": "City update skipped for non-customer"})
+
+        city = (request.data.get("city") or "").strip()
+        if not city:
+            return Response({"error": "city is required"}, status=400)
+
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        profile.city = city
+        profile.save()
+        return Response({"message": "City updated", "city": profile.city})

@@ -39,6 +39,18 @@ async function authFetch(url, options = {}) {
   return fetch(url, { ...options, headers: retryHeaders });
 }
 
+async function saveCustomerCity(city) {
+  if (!city) return;
+  const res = await authFetch("/api/accounts/me/customer-city/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ city }),
+  });
+  if (res.status === 401) {
+    window.location.href = "/login/";
+  }
+}
+
 async function ensureAccessTokenOrRedirect() {
   let token = localStorage.getItem("access");
   if (!token) {
@@ -72,6 +84,51 @@ async function detectLocationByIp() {
   }
 }
 
+async function reverseGeocodeCity(lat, lon) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1`
+    );
+    if (!res.ok) return "";
+    const data = await res.json();
+    const addr = data.address || {};
+    return (
+      addr.city ||
+      addr.town ||
+      addr.village ||
+      addr.county ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+async function detectLocationByBrowser() {
+  if (!("geolocation" in navigator)) return false;
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const city = await reverseGeocodeCity(latitude, longitude);
+        if (city) {
+          localStorage.setItem("location_city", city);
+          resolve(true);
+          return;
+        }
+        resolve(false);
+      },
+      () => resolve(false),
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 300000,
+      }
+    );
+  });
+}
+
 // Icon mapping (category name -> icon)
 const categoryIcons = {
   "Home Cleaning": "&#129532;",
@@ -90,10 +147,16 @@ const categoryIcons = {
   const ok = await ensureAccessTokenOrRedirect();
   if (!ok) return;
 
-  await detectLocationByIp();
+  const gotBrowserLocation = await detectLocationByBrowser();
+  if (!gotBrowserLocation) {
+    await detectLocationByIp();
+  }
 
   if (locationCity) {
     locationCity.value = localStorage.getItem("location_city") || "";
+    if (locationCity.value.trim()) {
+      saveCustomerCity(locationCity.value.trim());
+    }
   }
 
   // ==========================
@@ -123,8 +186,10 @@ const categoryIcons = {
 })();
 
 if (locationApply) {
-  locationApply.addEventListener("click", () => {
-    localStorage.setItem("location_city", locationCity.value.trim());
+  locationApply.addEventListener("click", async () => {
+    const city = locationCity.value.trim();
+    localStorage.setItem("location_city", city);
+    await saveCustomerCity(city);
   });
 }
 

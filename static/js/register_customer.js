@@ -1,28 +1,3 @@
-async function detectCity() {
-  try {
-    const stored = localStorage.getItem("location_city");
-    if (stored) return stored;
-    const res = await fetch("/api/accounts/ip-location/");
-    if (!res.ok) return "";
-    const data = await res.json();
-    if (data.city) {
-      localStorage.setItem("location_city", data.city);
-    }
-    return data.city || "";
-  } catch {
-    return "";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const cityInput = document.getElementById("city");
-  if (!cityInput) return;
-  const city = await detectCity();
-  if (city && !cityInput.value) {
-    cityInput.value = city;
-  }
-});
-
 document.getElementById("register-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -30,7 +5,6 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
   const username = document.getElementById("username").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  const city = document.getElementById("city").value;
 
   const errorEl = document.getElementById("error");
   const successEl = document.getElementById("success");
@@ -49,7 +23,6 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
         username,
         email,
         password,
-        city,
       }),
     });
 

@@ -128,10 +128,17 @@ document
     servicesError.classList.add("hidden");
 
     const selectedServiceIds = Array.from(selectedServices.keys());
+    const cityValue = city.value.trim();
 
     if (!selectedServiceIds.length) {
       servicesError.textContent = "Please add at least one service";
       servicesError.classList.remove("hidden");
+      return;
+    }
+
+    if (!cityValue) {
+      errorEl.textContent = "City is required";
+      errorEl.classList.remove("hidden");
       return;
     }
 
@@ -143,7 +150,7 @@ document
           username: username.value,
           email: email.value,
           password: password.value,
-          city: city.value,
+          city: cityValue,
           services: selectedServiceIds,
         }),
       });
@@ -155,6 +162,7 @@ document
           data.detail ||
           data.username?.[0] ||
           data.email?.[0] ||
+          data.city?.[0] ||
           data.services?.[0] ||
           "Registration failed"
         );
