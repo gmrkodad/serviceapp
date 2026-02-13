@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # =====================
 # AUTH PAGES (NO NAV)
@@ -30,6 +30,8 @@ def register_provider_page(request):
 # =====================
 
 def customer_home(request):
+    if request.user.is_authenticated and getattr(request.user, "role", None) == "ADMIN":
+        return redirect("/admin-panel/")
     return render(request, "customer_home.html", {
         "show_nav": True
     })

@@ -112,6 +112,14 @@ const categoryIcons = {
       allCategories = categories;
       renderCategories("");
     });
+
+  authFetch("/api/accounts/me/")
+    .then((res) => (res.ok ? res.json() : null))
+    .then((user) => {
+      if (user && user.role === "ADMIN") {
+        window.location.href = "/admin-panel/";
+      }
+    });
 })();
 
 if (locationApply) {

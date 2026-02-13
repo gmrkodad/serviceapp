@@ -1,5 +1,6 @@
 (async function () {
   const usernameEl = document.getElementById("nav-username");
+  const homeLinkEl = document.getElementById("nav-home-link");
   if (!usernameEl) return;
 
   async function refreshAccessToken() {
@@ -40,4 +41,14 @@
   if (!res.ok) return;
   const user = await res.json();
   usernameEl.textContent = `Hi, ${user.username}`;
+
+  if (homeLinkEl) {
+    if (user.role === "ADMIN") {
+      homeLinkEl.href = "/admin-panel/";
+    } else if (user.role === "PROVIDER") {
+      homeLinkEl.href = "/dashboard/provider/";
+    } else {
+      homeLinkEl.href = "/";
+    }
+  }
 })();
