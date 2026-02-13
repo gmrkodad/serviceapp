@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="flex justify-center mt-20">
+  <div class="bg-white p-8 rounded-xl shadow w-full max-w-md">
+
+    <h2 class="text-2xl font-semibold text-center mb-6">
+      Login
+    </h2>
+
+    <form id="login-form" class="space-y-4">
+      <input id="username" placeholder="Username"
+        class="w-full border px-3 py-2 rounded-lg">
+
+      <input id="password" type="password" placeholder="Password"
+        class="w-full border px-3 py-2 rounded-lg">
+
+      <button class="w-full bg-blue-600 text-white py-2 rounded-lg">
+        Login
+      </button>
+
+      <p id="error" class="text-red-500 text-center hidden"></p>
+    </form>
+
+  </div>
+</div>
+<p class="text-center text-sm mt-4 text-gray-600">
+  Don’t have an account?
+  <a href="/register/" class="text-blue-600 font-medium">
+    Create one
+  </a>
+</p>
+
+<script src="/static/js/auth.js"></script>
+{% endblock %}

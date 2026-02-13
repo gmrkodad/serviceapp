@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  .admin-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  .admin-bg { background: radial-gradient(900px 300px at 10% -10%, #fef3c7 0%, transparent 60%),
+              radial-gradient(900px 300px at 90% -10%, #e0e7ff 0%, transparent 60%),
+              linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+</style>
+
+<div class="admin-font admin-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+    <div>
+      <p class="text-sm uppercase tracking-widest text-slate-500">Admin</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Control Center</h2>
+      <p class="text-slate-600 mt-2">Manage users, bookings, services, and reviews.</p>
+    </div>
+    <div class="flex gap-2">
+      <span class="h-3 w-24 bg-amber-300 rounded-full"></span>
+      <span class="h-3 w-16 bg-indigo-300 rounded-full"></span>
+      <span class="h-3 w-10 bg-emerald-300 rounded-full"></span>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-10">
+    <a href="/admin-panel/" class="px-4 py-2 rounded-full bg-slate-900 text-white">Overview</a>
+    <a href="/admin-panel/bookings/" class="px-4 py-2 rounded-full bg-white border">Bookings</a>
+    <a href="/admin-panel/users/" class="px-4 py-2 rounded-full bg-white border">Users</a>
+    <a href="/admin-panel/services/" class="px-4 py-2 rounded-full bg-white border">Services</a>
+    <a href="/admin-panel/reviews/" class="px-4 py-2 rounded-full bg-white border">Reviews</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <p class="text-slate-500">Total Bookings</p>
+      <p id="admin-total-bookings" class="text-3xl font-bold mt-2">0</p>
+    </div>
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <p class="text-slate-500">Users</p>
+      <p id="admin-total-users" class="text-3xl font-bold mt-2">0</p>
+    </div>
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <p class="text-slate-500">Services</p>
+      <p id="admin-total-services" class="text-3xl font-bold mt-2">0</p>
+    </div>
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <p class="text-slate-500">Reviews</p>
+      <p id="admin-total-reviews" class="text-3xl font-bold mt-2">0</p>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
+{% endblock %}

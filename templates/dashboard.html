@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  .dash-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  .dash-grid { background: radial-gradient(1200px 400px at 10% -10%, #fef3c7 0%, transparent 60%),
+               radial-gradient(1200px 400px at 90% -10%, #dbeafe 0%, transparent 60%),
+               linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+  .glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(8px); }
+</style>
+
+<div class="dash-font dash-grid rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
+    <div>
+      <p class="text-sm uppercase tracking-widest text-slate-500">Overview</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Dashboard</h2>
+      <p class="text-slate-600 mt-2">Track bookings, progress, and completions at a glance.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-full bg-amber-200"></div>
+      <div class="h-10 w-10 rounded-full bg-blue-200"></div>
+      <div class="h-10 w-10 rounded-full bg-emerald-200"></div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="glass p-6 rounded-2xl shadow border border-slate-100">
+      <p class="text-slate-500">Total Bookings</p>
+      <p class="text-4xl font-bold mt-3 text-slate-900" id="total-bookings">0</p>
+      <div class="mt-4 h-1.5 w-full bg-slate-100 rounded-full">
+        <div class="h-1.5 bg-indigo-500 rounded-full" style="width: 60%"></div>
+      </div>
+    </div>
+
+    <div class="glass p-6 rounded-2xl shadow border border-slate-100">
+      <p class="text-slate-500">Pending</p>
+      <p class="text-4xl font-bold mt-3 text-amber-600" id="pending-bookings">0</p>
+      <div class="mt-4 h-1.5 w-full bg-slate-100 rounded-full">
+        <div class="h-1.5 bg-amber-400 rounded-full" style="width: 40%"></div>
+      </div>
+    </div>
+
+    <div class="glass p-6 rounded-2xl shadow border border-slate-100">
+      <p class="text-slate-500">Completed</p>
+      <p class="text-4xl font-bold mt-3 text-emerald-600" id="completed-bookings">0</p>
+      <div class="mt-4 h-1.5 w-full bg-slate-100 rounded-full">
+        <div class="h-1.5 bg-emerald-400 rounded-full" style="width: 70%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Bookings -->
+  <div class="glass rounded-2xl shadow border border-slate-100 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-900">Recent Bookings</h3>
+      <span class="text-xs text-slate-500 uppercase tracking-widest">Last 5</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="text-slate-500 border-b border-slate-100">
+            <th class="py-3">Service</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="booking-list">
+          <tr class="border-b border-slate-50">
+            <td class="py-3">Electrician</td>
+            <td>
+              <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700">Pending</span>
+            </td>
+            <td>2026-02-10</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

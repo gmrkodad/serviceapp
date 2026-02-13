@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Provider Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <form
+    id="register-form"
+    class="bg-white p-6 rounded shadow-md w-full max-w-md"
+  >
+    <h2 class="text-2xl font-bold mb-4 text-center">
+      Register as Service Provider
+    </h2>
+
+    <input
+      id="username"
+      type="text"
+      placeholder="Username"
+      class="w-full border p-2 mb-3 rounded"
+      required
+    />
+
+    <input
+      id="email"
+      type="email"
+      placeholder="Email"
+      class="w-full border p-2 mb-3 rounded"
+      required
+    />
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      class="w-full border p-2 mb-3 rounded"
+      required
+    />
+
+    <input
+      id="city"
+      type="text"
+      placeholder="City"
+      class="w-full border p-2 mb-3 rounded"
+    />
+
+    <!-- 🔥 SERVICES MULTI SELECT -->
+    <label class="block font-semibold mb-1">
+      Services you provide
+    </label>
+
+    <div class="flex gap-2 mb-2">
+      <select
+        id="services"
+        class="w-full border p-2 rounded"
+      ></select>
+      <button
+        type="button"
+        id="add-service"
+        class="px-3 py-2 bg-slate-900 text-white rounded"
+      >
+        Add
+      </button>
+    </div>
+
+    <div class="mb-3">
+      <p class="text-sm text-gray-600 mb-2">Selected services:</p>
+      <div id="selected-services" class="flex flex-wrap gap-2"></div>
+      <p id="services-error" class="text-red-600 text-sm hidden mt-2"></p>
+    </div>
+
+    <p id="error" class="text-red-600 text-sm mb-3 hidden"></p>
+    <p id="success" class="text-green-600 text-sm mb-3 hidden"></p>
+
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white py-2 rounded"
+    >
+      Register
+    </button>
+  </form>
+
+  <script src="/static/js/register_provider.js"></script>
+</body>
+</html>

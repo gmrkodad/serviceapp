@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="bg-white p-8 rounded-xl shadow w-full max-w-md">
+
+  <h2 class="text-xl font-semibold text-center mb-6">
+    Customer Signup
+  </h2>
+
+  <form id="register-form" class="space-y-4">
+    <input id="username" placeholder="Username"
+      class="w-full border px-3 py-2 rounded" required>
+
+    <input id="email" type="email" placeholder="Email"
+      class="w-full border px-3 py-2 rounded" required>
+
+    <input id="password" type="password" placeholder="Password"
+      class="w-full border px-3 py-2 rounded" required>
+
+    <input id="city" placeholder="City"
+      class="w-full border px-3 py-2 rounded">
+
+    <!-- ✅ MUST be submit -->
+    <button type="submit"
+      class="w-full bg-blue-600 text-white py-2 rounded">
+      Register
+    </button>
+
+    <p id="error" class="text-red-500 text-center hidden"></p>
+    <p id="success" class="text-green-600 text-center hidden"></p>
+  </form>
+
+</div>
+
+<!-- ✅ JS MUST be included -->
+<script src="{% static 'js/register_customer.js' %}"></script>
+
+</body>
+</html>

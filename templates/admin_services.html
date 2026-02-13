@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Services{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  .admin-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  .admin-bg { background: radial-gradient(900px 300px at 10% -10%, #fde68a 0%, transparent 60%),
+              radial-gradient(900px 300px at 90% -10%, #bfdbfe 0%, transparent 60%),
+              linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+</style>
+
+<div class="admin-font admin-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+    <div>
+      <p class="text-sm uppercase tracking-widest text-slate-500">Admin</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Services</h2>
+      <p class="text-slate-600 mt-2">Create and manage categories and services.</p>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-8">
+    <a href="/admin-panel/" class="px-4 py-2 rounded-full bg-white border">Overview</a>
+    <a href="/admin-panel/bookings/" class="px-4 py-2 rounded-full bg-white border">Bookings</a>
+    <a href="/admin-panel/users/" class="px-4 py-2 rounded-full bg-white border">Users</a>
+    <a href="/admin-panel/services/" class="px-4 py-2 rounded-full bg-slate-900 text-white">Services</a>
+    <a href="/admin-panel/reviews/" class="px-4 py-2 rounded-full bg-white border">Reviews</a>
+  </div>
+
+  <div class="bg-white/80 rounded-2xl border border-slate-100 p-4 shadow-sm mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <input id="filter-service-search" class="border rounded p-2" placeholder="Search services/categories" />
+      <select id="filter-service-category" class="border rounded p-2">
+        <option value="">All categories</option>
+      </select>
+      <select id="filter-service-active" class="border rounded p-2">
+        <option value="">All status</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <h3 class="font-semibold mb-3">Add Category</h3>
+      <form id="admin-category-form" class="space-y-3">
+        <input id="category-name" class="w-full border rounded p-2" placeholder="Category name" required />
+        <textarea id="category-description" class="w-full border rounded p-2" rows="2" placeholder="Description"></textarea>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="category-active" type="checkbox" checked /> Active
+        </label>
+        <button class="bg-slate-900 text-white px-4 py-2 rounded">Create Category</button>
+        <p id="category-error" class="text-sm text-red-600 hidden"></p>
+      </form>
+    </div>
+
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <h3 class="font-semibold mb-3">Add Service</h3>
+      <form id="admin-service-form" class="space-y-3">
+        <input id="service-name" class="w-full border rounded p-2" placeholder="Service name" required />
+        <textarea id="service-description" class="w-full border rounded p-2" rows="2" placeholder="Description" required></textarea>
+        <input id="service-price" type="number" step="0.01" class="w-full border rounded p-2" placeholder="Base price" required />
+        <select id="service-category" class="w-full border rounded p-2" required></select>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="service-active" type="checkbox" checked /> Active
+        </label>
+        <button class="bg-slate-900 text-white px-4 py-2 rounded">Create Service</button>
+        <p id="service-error" class="text-sm text-red-600 hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <h3 class="font-semibold mb-3">Categories</h3>
+      <ul id="admin-categories-list" class="space-y-2"></ul>
+    </div>
+    <div class="bg-white/80 rounded-2xl border border-slate-100 p-5 shadow-sm">
+      <h3 class="font-semibold mb-3">Services</h3>
+      <ul id="admin-services-list" class="space-y-2"></ul>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/admin_services.js' %}"></script>
+{% endblock %}

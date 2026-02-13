@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Users{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  .admin-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  .admin-bg { background: radial-gradient(900px 300px at 10% -10%, #dcfce7 0%, transparent 60%),
+              radial-gradient(900px 300px at 90% -10%, #e0e7ff 0%, transparent 60%),
+              linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+</style>
+
+<div class="admin-font admin-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+    <div>
+      <p class="text-sm uppercase tracking-widest text-slate-500">Admin</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Users</h2>
+      <p class="text-slate-600 mt-2">Activate or deactivate accounts.</p>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-8">
+    <a href="/admin-panel/" class="px-4 py-2 rounded-full bg-white border">Overview</a>
+    <a href="/admin-panel/bookings/" class="px-4 py-2 rounded-full bg-white border">Bookings</a>
+    <a href="/admin-panel/users/" class="px-4 py-2 rounded-full bg-slate-900 text-white">Users</a>
+    <a href="/admin-panel/services/" class="px-4 py-2 rounded-full bg-white border">Services</a>
+    <a href="/admin-panel/reviews/" class="px-4 py-2 rounded-full bg-white border">Reviews</a>
+  </div>
+
+  <div class="bg-white/80 rounded-2xl border border-slate-100 p-4 shadow-sm mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <input id="filter-user-search" class="border rounded p-2" placeholder="Search username or email" />
+      <select id="filter-user-role" class="border rounded p-2">
+        <option value="">All roles</option>
+        <option value="CUSTOMER">Customer</option>
+        <option value="PROVIDER">Provider</option>
+        <option value="ADMIN">Admin</option>
+      </select>
+      <select id="filter-user-active" class="border rounded p-2">
+        <option value="">All status</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+      <input id="filter-user-city" class="border rounded p-2" placeholder="City" />
+    </div>
+  </div>
+
+  <div class="overflow-x-auto bg-white/80 rounded-2xl border border-slate-100 shadow-sm">
+    <table class="min-w-full text-sm table-fixed">
+      <thead class="text-left text-slate-500">
+        <tr class="border-b">
+          <th class="py-3 px-4 w-40">Username</th>
+          <th class="py-3 px-4 w-56">Email</th>
+          <th class="py-3 px-4 w-28">Role</th>
+          <th class="py-3 px-4 w-32">City</th>
+          <th class="py-3 px-4 w-64">Services</th>
+          <th class="py-3 px-4 w-20 text-center">Active</th>
+          <th class="py-3 px-4 w-32 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody id="admin-users-list"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="{% static 'js/admin_users.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}ServiceApp{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- TOP NAV -->
+{% if show_nav %}
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+    <!-- Logo -->
+    <a href="/" class="text-2xl font-bold text-blue-600">
+      ServiceApp
+    </a>
+
+    <!-- Right actions -->
+    <div class="flex items-center space-x-6">
+      <span id="nav-username" class="text-sm text-gray-600"></span>
+
+      <!-- Notifications -->
+      <div class="relative">
+        <button id="notif-bell" class="relative text-xl">
+          🔔
+          <span
+            id="notif-count"
+            class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
+          </span>
+        </button>
+
+        <div
+          id="notif-dropdown"
+          class="hidden absolute right-0 mt-2 w-80 bg-white shadow rounded-lg z-50">
+
+          <div class="p-3 border-b font-semibold">
+            Notifications
+          </div>
+
+          <ul id="notif-list" class="max-h-64 overflow-y-auto"></ul>
+
+          <button
+            id="mark-all"
+            class="w-full text-sm text-blue-600 p-2 border-t hover:bg-gray-50">
+            Mark all as read
+          </button>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button
+        id="logout-btn"
+        class="text-red-600 font-medium hover:underline">
+        Logout
+      </button>
+
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+<!-- PAGE CONTENT -->
+<main class="max-w-7xl mx-auto px-6 py-6">
+  <button
+    id="back-btn"
+    class="mb-6 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
+    ← Back
+  </button>
+  {% block content %}{% endblock %}
+</main>
+
+{% if show_nav %}
+<script src="{% static 'js/notifications.js' %}?v=2"></script>
+<script src="{% static 'js/logout.js' %}"></script>
+<script src="{% static 'js/nav_user.js' %}?v=1"></script>
+{% endif %}
+
+<script>
+  (function () {
+    const btn = document.getElementById("back-btn");
+    if (!btn) return;
+    const hideOn = ["/", "/login/", "/register/", "/register/customer/", "/register/provider/"];
+    if (hideOn.includes(window.location.pathname)) {
+      btn.classList.add("hidden");
+      return;
+    }
+    btn.addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/";
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

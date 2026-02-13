@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Reviews{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  .admin-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  .admin-bg { background: radial-gradient(900px 300px at 10% -10%, #fbcfe8 0%, transparent 60%),
+              radial-gradient(900px 300px at 90% -10%, #bae6fd 0%, transparent 60%),
+              linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+</style>
+
+<div class="admin-font admin-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+    <div>
+      <p class="text-sm uppercase tracking-widest text-slate-500">Admin</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Reviews</h2>
+      <p class="text-slate-600 mt-2">Monitor ratings and feedback.</p>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-8">
+    <a href="/admin-panel/" class="px-4 py-2 rounded-full bg-white border">Overview</a>
+    <a href="/admin-panel/bookings/" class="px-4 py-2 rounded-full bg-white border">Bookings</a>
+    <a href="/admin-panel/users/" class="px-4 py-2 rounded-full bg-white border">Users</a>
+    <a href="/admin-panel/services/" class="px-4 py-2 rounded-full bg-white border">Services</a>
+    <a href="/admin-panel/reviews/" class="px-4 py-2 rounded-full bg-slate-900 text-white">Reviews</a>
+  </div>
+
+  <div class="bg-white/80 rounded-2xl border border-slate-100 p-4 shadow-sm mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <input id="filter-review-search" class="border rounded p-2" placeholder="Search service or author" />
+      <select id="filter-review-rating" class="border rounded p-2">
+        <option value="">All ratings</option>
+        <option value="5">5 stars</option>
+        <option value="4">4 stars</option>
+        <option value="3">3 stars</option>
+        <option value="2">2 stars</option>
+        <option value="1">1 star</option>
+      </select>
+      <input id="filter-review-provider" class="border rounded p-2" placeholder="Provider username" />
+    </div>
+  </div>
+
+  <div id="admin-reviews-empty" class="text-slate-500 hidden">No reviews yet.</div>
+  <div id="admin-reviews-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</div>
+
+<script src="{% static 'js/admin_reviews.js' %}"></script>
+{% endblock %}
