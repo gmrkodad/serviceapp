@@ -160,6 +160,22 @@ class AdminUserToggleAPIView(APIView):
         return Response({"message": "User updated", "is_active": user.is_active})
 
 
+class AdminUserDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.id == request.user.id:
+            return Response({"error": "You cannot delete your own account"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.delete()
+        return Response({"message": "User deleted"})
+
+
 class AdminProviderServicesAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 

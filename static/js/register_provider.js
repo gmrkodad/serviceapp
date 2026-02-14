@@ -12,28 +12,49 @@ const successEl = document.getElementById("success");
 
 const selectedServices = new Map();
 
-async function detectCity() {
+async function reverseGeocodeCity(lat, lon) {
   try {
-    const stored = localStorage.getItem("location_city");
-    if (stored) return stored;
-    const res = await fetch("/api/accounts/ip-location/");
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1`
+    );
     if (!res.ok) return "";
     const data = await res.json();
-    if (data.city) {
-      localStorage.setItem("location_city", data.city);
-    }
-    return data.city || "";
+    const addr = data.address || {};
+    return addr.city || addr.town || addr.village || addr.county || "";
   } catch {
     return "";
   }
 }
 
+function detectCityByBrowser() {
+  if (!("geolocation" in navigator)) {
+    return Promise.resolve("");
+  }
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const cityName = await reverseGeocodeCity(latitude, longitude);
+        resolve(cityName || "");
+      },
+      () => resolve(""),
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 300000,
+      }
+    );
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const cityInput = document.getElementById("city");
   if (!cityInput) return;
-  const city = await detectCity();
-  if (city && !cityInput.value) {
-    cityInput.value = city;
+
+  const browserCity = await detectCityByBrowser();
+  if (browserCity && !cityInput.value) {
+    cityInput.value = browserCity;
   }
 });
 

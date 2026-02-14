@@ -150,6 +150,9 @@
               ${u.is_active ? "Deactivate" : "Activate"}
             </button>
             ${u.role === "PROVIDER" ? `<button class="px-3 py-1 rounded text-xs bg-blue-100 text-blue-700" data-services-edit="${u.id}">Edit Services</button>` : ""}
+            <button class="px-3 py-1 rounded text-xs bg-rose-100 text-rose-700" data-delete-user="${u.id}" data-username="${u.username}">
+              Delete
+            </button>
           </div>
         `;
 
@@ -166,6 +169,7 @@
     });
 
     bindToggleButtons();
+    bindDeleteButtons();
     bindServiceEditors();
   }
 
@@ -181,6 +185,29 @@
           handleUnauthorized();
           return;
         }
+        loadUsers();
+      });
+    });
+  }
+
+  function bindDeleteButtons() {
+    const buttons = document.querySelectorAll("[data-delete-user]");
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const userId = btn.getAttribute("data-delete-user");
+        const username = btn.getAttribute("data-username") || "this user";
+        const ok = window.confirm(`Delete ${username}? This action cannot be undone.`);
+        if (!ok) return;
+
+        const res = await authFetch(`/api/accounts/admin/users/${userId}/`, {
+          method: "DELETE",
+        });
+
+        if (res.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+
         loadUsers();
       });
     });
