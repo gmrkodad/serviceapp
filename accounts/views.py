@@ -11,6 +11,7 @@ import random
 from datetime import timedelta
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Notification, ProviderProfile, CustomerProfile, PhoneOTP, UserPhone
 from .serializers import ProviderListSerializer
@@ -51,27 +52,47 @@ class ProviderSignupAPIView(APIView):
 
 
 def _send_fast2sms_otp(phone, otp):
-    api_key = getattr(settings, "FAST2SMS_API_KEY", "")
+    api_key = (getattr(settings, "FAST2SMS_API_KEY", "") or "").strip()
     if not api_key:
         return False, "FAST2SMS API key is not configured"
 
-    params = {
-        "authorization": api_key,
-        "route": "otp",
+    data = urlencode({
         "variables_values": otp,
-        "flash": "0",
+        "route": "otp",
         "numbers": phone,
-    }
-    url = "https://www.fast2sms.com/dev/bulkV2?" + urlencode(params)
-    req = Request(url, method="GET")
+        "flash": "0",
+    }).encode("utf-8")
+    req = Request(
+        "https://www.fast2sms.com/dev/bulkV2",
+        data=data,
+        method="POST",
+        headers={
+            "authorization": api_key,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    )
     try:
         with urlopen(req, timeout=8) as resp:
             body = json.loads(resp.read().decode("utf-8"))
         if body.get("return") is True:
             return True, None
-        return False, body.get("message", "SMS provider error")
-    except Exception:
-        return False, "SMS provider request failed"
+        message = body.get("message", "SMS provider error")
+        if isinstance(message, list):
+            message = ", ".join(str(m) for m in message)
+        return False, str(message)
+    except HTTPError as exc:
+        try:
+            payload = json.loads(exc.read().decode("utf-8"))
+            message = payload.get("message", f"HTTP {exc.code}")
+            if isinstance(message, list):
+                message = ", ".join(str(m) for m in message)
+            return False, f"Fast2SMS error: {message}"
+        except Exception:
+            return False, f"Fast2SMS HTTP error: {exc.code}"
+    except URLError as exc:
+        return False, f"Fast2SMS network error: {exc.reason}"
+    except Exception as exc:
+        return False, f"SMS provider request failed: {str(exc)}"
 
 
 class SendLoginOTPAPIView(APIView):
