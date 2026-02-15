@@ -25,7 +25,6 @@ async function authFetch(url, options = {}) {
   };
 
   let res = await fetch(url, { ...options, headers });
-
   if (res.status !== 401) return res;
 
   const newAccess = await refreshAccessToken();
@@ -41,9 +40,7 @@ async function authFetch(url, options = {}) {
 
 async function ensureAccessTokenOrRedirect() {
   let token = localStorage.getItem("access");
-  if (!token) {
-    token = await refreshAccessToken();
-  }
+  if (!token) token = await refreshAccessToken();
   if (!token) {
     window.location.href = "/login/";
     return false;
@@ -54,19 +51,15 @@ async function ensureAccessTokenOrRedirect() {
 const servicesList = document.getElementById("services-list");
 const providersList = document.getElementById("providers-list");
 const empty = document.getElementById("empty");
-
 const bannerTitle = document.getElementById("category-title");
 const bannerIcon = document.getElementById("category-icon");
 
-// SAFER URL PARSE
 const parts = window.location.pathname.split("/").filter(Boolean);
 const categoryId = Number(parts[1]);
 const params = new URLSearchParams(window.location.search);
 let selectedServiceId = Number(params.get("service")) || null;
-
 let activeCategory = null;
 
-// ICON MAP
 const ICONS = {
   "Home Cleaning": "&#129532;",
   Plumbing: "&#128703;",
@@ -79,128 +72,143 @@ const ICONS = {
   Carpentry: "&#128296;",
 };
 
-(async () => {
-  const ok = await ensureAccessTokenOrRedirect();
-  if (!ok) return;
+function renderServices() {
+  servicesList.innerHTML = "";
 
-  // ============================
-  // LOAD CATEGORY & SERVICES
-  // ============================
-  authFetch("/api/services/categories/")
-    .then(res => {
-      if (res.status === 401) {
-        window.location.href = "/login/";
-        return [];
-      }
-      return res.json();
-    })
-    .then(categories => {
-      activeCategory = categories.find((c) => c.id === categoryId);
+  if (!activeCategory || !activeCategory.services?.length) {
+    return;
+  }
 
-      if (!activeCategory) return;
+  activeCategory.services.forEach((s) => {
+    const li = document.createElement("li");
+    li.className = "p-4 cursor-pointer hover:bg-blue-50 transition rounded-lg";
 
-      if (!selectedServiceId) {
-        selectedServiceId = activeCategory.services[0]?.id || null;
-      }
+    if (s.id === selectedServiceId) {
+      li.classList.add("bg-blue-100", "font-semibold");
+    }
 
-      // Banner
-      bannerTitle.innerText = activeCategory.name;
-      bannerIcon.innerHTML =
-        ICONS[activeCategory.name] || "&#128736;";
+    li.innerHTML = `
+      <div class="flex justify-between items-center">
+        <span>${s.name}</span>
+        <span class="text-sm text-gray-500">&#8377;${s.base_price}</span>
+      </div>
+    `;
 
-      servicesList.innerHTML = "";
+    li.onclick = async () => {
+      selectedServiceId = s.id;
+      const url = new URL(window.location.href);
+      url.searchParams.set("service", String(s.id));
+      window.history.replaceState({}, "", url.toString());
 
-      activeCategory.services.forEach(s => {
-        const li = document.createElement("li");
+      renderServices();
+      await loadProviders();
+    };
 
-        li.className =
-          "p-4 cursor-pointer hover:bg-blue-50 transition rounded-lg";
+    servicesList.appendChild(li);
+  });
+}
 
-        if (s.id === selectedServiceId) {
-          li.classList.add("bg-blue-100", "font-semibold");
-        }
+async function loadCategory() {
+  const res = await authFetch("/api/services/categories/");
+  if (res.status === 401) {
+    window.location.href = "/login/";
+    return false;
+  }
+  if (!res.ok) {
+    return false;
+  }
 
-        li.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span>${s.name}</span>
-            <span class="text-sm text-gray-500">
-              &#8377;${s.base_price}
-            </span>
-          </div>
-        `;
+  const categories = await res.json();
+  activeCategory = (categories || []).find((c) => c.id === categoryId) || null;
+  if (!activeCategory) {
+    return false;
+  }
 
-        li.onclick = () => {
-          window.location.href = `/services/${categoryId}/?service=${s.id}`;
-        };
+  if (!selectedServiceId) {
+    selectedServiceId = activeCategory.services?.[0]?.id || null;
+  }
 
-        servicesList.appendChild(li);
-      });
-    });
+  bannerTitle.innerText = activeCategory.name;
+  bannerIcon.innerHTML = ICONS[activeCategory.name] || "&#128736;";
 
-  // ============================
-  // LOAD PROVIDERS
-  // ============================
+  renderServices();
+  return true;
+}
+
+async function loadProviders() {
   providersList.innerHTML = "<p class='text-gray-500'>Loading providers...</p>";
+  empty.classList.add("hidden");
 
-  if (!selectedServiceId) return;
+  if (!selectedServiceId) {
+    providersList.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
 
   const city = localStorage.getItem("location_city") || "";
   const qs = new URLSearchParams();
   if (city) qs.set("city", city);
 
-  authFetch(`/api/services/${selectedServiceId}/providers/?${qs.toString()}`)
-    .then(res => {
-      if (res.status === 401) {
-        window.location.href = "/login/";
-        return [];
-      }
-      return res.json();
-    })
-    .then(providers => {
-      if (!providers.length) {
-        providersList.innerHTML = "";
-        empty.classList.remove("hidden");
-        return;
-      }
+  const url = `/api/services/${selectedServiceId}/providers/${qs.toString() ? `?${qs.toString()}` : ""}`;
+  const res = await authFetch(url);
 
-      providersList.innerHTML = "";
+  if (res.status === 401) {
+    window.location.href = "/login/";
+    return;
+  }
 
-      providers.forEach(p => {
-        const card = document.createElement("div");
+  if (!res.ok) {
+    providersList.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
 
-        card.className =
-          "bg-white rounded-xl shadow hover:shadow-lg transition p-6";
+  const providers = await res.json();
+  if (!providers.length) {
+    providersList.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
 
-        card.innerHTML = `
-          <div class="flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-xl">
-              &#128100;
-            </div>
+  providersList.innerHTML = "";
+  providers.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "bg-white rounded-xl shadow hover:shadow-lg transition p-6";
+    card.innerHTML = `
+      <div class="flex items-center space-x-4">
+        <div class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-xl">
+          &#128100;
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg">${p.username}</h3>
+          <p class="text-sm text-gray-600">&#11088; ${p.rating || "New"} rating</p>
+        </div>
+      </div>
+      <button
+        class="mt-5 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+        onclick="bookService(${p.user_id})"
+      >
+        Book Service
+      </button>
+    `;
+    providersList.appendChild(card);
+  });
+}
 
-            <div>
-              <h3 class="font-semibold text-lg">${p.username}</h3>
-              <p class="text-sm text-gray-600">
-                &#11088; ${p.rating || "New"} rating
-              </p>
-            </div>
-          </div>
+(async () => {
+  const ok = await ensureAccessTokenOrRedirect();
+  if (!ok) return;
 
-          <button
-            class="mt-5 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
-            onclick="bookService(${p.user_id})"
-          >
-            Book Service
-          </button>
-        `;
+  const loaded = await loadCategory();
+  if (!loaded) {
+    providersList.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
 
-        providersList.appendChild(card);
-      });
-    });
+  await loadProviders();
 })();
 
-// ============================
-// BOOK SERVICE
-// ============================
 function bookService(providerId) {
   localStorage.setItem("selectedService", selectedServiceId);
   localStorage.setItem("selectedProvider", providerId);
