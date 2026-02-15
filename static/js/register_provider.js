@@ -1,6 +1,7 @@
 const username = document.getElementById("username");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
+const phone = document.getElementById("phone");
 const city = document.getElementById("city");
 const serviceSelect = document.getElementById("services");
 const addServiceBtn = document.getElementById("add-service");
@@ -171,6 +172,7 @@ document
           username: username.value,
           email: email.value,
           password: password.value,
+          phone: phone.value,
           city: cityValue,
           services: selectedServiceIds,
         }),
@@ -183,6 +185,7 @@ document
           data.detail ||
           data.username?.[0] ||
           data.email?.[0] ||
+          data.phone?.[0] ||
           data.city?.[0] ||
           data.services?.[0] ||
           "Registration failed"

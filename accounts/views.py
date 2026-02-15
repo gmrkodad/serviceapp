@@ -4,13 +4,20 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
+from django.conf import settings
+from django.utils import timezone
 import json
+import random
+from datetime import timedelta
+from urllib.parse import urlencode
 from urllib.request import urlopen, Request
-from .models import User, Notification, ProviderProfile, CustomerProfile
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User, Notification, ProviderProfile, CustomerProfile, PhoneOTP, UserPhone
 from .serializers import ProviderListSerializer
 from .serializers import CustomerSignupSerializer, ProviderSignupSerializer
 from .serializers import NotificationSerializer
 from .serializers import UserAdminSerializer
+from .serializers import normalize_indian_phone, validate_indian_phone
 from services.models import Service
 from accounts.permissions import IsAdmin, IsProvider
 
@@ -28,14 +35,6 @@ class CustomerSignupAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-
-from .serializers import ProviderSignupSerializer
-
-
 class ProviderSignupAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -49,6 +48,120 @@ class ProviderSignupAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def _send_fast2sms_otp(phone, otp):
+    api_key = getattr(settings, "FAST2SMS_API_KEY", "")
+    if not api_key:
+        return False, "FAST2SMS API key is not configured"
+
+    params = {
+        "authorization": api_key,
+        "route": "otp",
+        "variables_values": otp,
+        "flash": "0",
+        "numbers": phone,
+    }
+    url = "https://www.fast2sms.com/dev/bulkV2?" + urlencode(params)
+    req = Request(url, method="GET")
+    try:
+        with urlopen(req, timeout=8) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        if body.get("return") is True:
+            return True, None
+        return False, body.get("message", "SMS provider error")
+    except Exception:
+        return False, "SMS provider request failed"
+
+
+class SendLoginOTPAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        raw_phone = request.data.get("phone", "")
+        try:
+            phone = validate_indian_phone(raw_phone)
+        except Exception as exc:
+            return Response({"phone": [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not UserPhone.objects.filter(phone=phone, user__is_active=True).exists():
+            return Response({"error": "No active account found for this mobile number"}, status=404)
+
+        cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 60))
+        latest = PhoneOTP.objects.filter(
+            phone=phone,
+            purpose=PhoneOTP.Purpose.LOGIN,
+            is_used=False,
+            expires_at__gt=timezone.now(),
+        ).order_by("-created_at").first()
+        if latest and (timezone.now() - latest.created_at).total_seconds() < cooldown_seconds:
+            wait = cooldown_seconds - int((timezone.now() - latest.created_at).total_seconds())
+            return Response({"error": f"Please wait {max(wait, 1)} seconds before requesting a new OTP"}, status=429)
+
+        otp = f"{random.randint(100000, 999999)}"
+        expiry_seconds = int(getattr(settings, "OTP_EXPIRY_SECONDS", 300))
+        PhoneOTP.objects.create(
+            phone=phone,
+            code=otp,
+            purpose=PhoneOTP.Purpose.LOGIN,
+            expires_at=timezone.now() + timedelta(seconds=expiry_seconds),
+        )
+
+        sent, reason = _send_fast2sms_otp(phone, otp)
+        if not sent:
+            if settings.DEBUG:
+                return Response({
+                    "message": "OTP generated (debug mode fallback)",
+                    "dev_otp": otp,
+                })
+            return Response({"error": reason or "Failed to send OTP"}, status=502)
+
+        return Response({"message": "OTP sent successfully"})
+
+
+class VerifyLoginOTPAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone = normalize_indian_phone(request.data.get("phone", ""))
+        otp_code = str(request.data.get("otp", "")).strip()
+        if not phone or not otp_code:
+            return Response({"error": "phone and otp are required"}, status=400)
+
+        max_attempts = int(getattr(settings, "OTP_MAX_ATTEMPTS", 5))
+        otp = PhoneOTP.objects.filter(
+            phone=phone,
+            purpose=PhoneOTP.Purpose.LOGIN,
+            is_used=False,
+            expires_at__gt=timezone.now(),
+        ).order_by("-created_at").first()
+
+        if not otp:
+            return Response({"error": "OTP expired or not found"}, status=400)
+
+        if otp.attempts >= max_attempts:
+            return Response({"error": "Maximum attempts reached. Request a new OTP"}, status=400)
+
+        if otp.code != otp_code:
+            otp.attempts += 1
+            otp.save(update_fields=["attempts"])
+            return Response({"error": "Invalid OTP"}, status=400)
+
+        otp.is_used = True
+        otp.save(update_fields=["is_used"])
+
+        phone_record = UserPhone.objects.filter(phone=phone, user__is_active=True).select_related("user").first()
+        if not phone_record:
+            return Response({"error": "No active account found for this mobile number"}, status=404)
+
+        user = phone_record.user
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "role": "ADMIN" if user.is_staff or user.is_superuser else user.role,
+            "username": user.username,
+        })
 
 
 
@@ -140,6 +253,7 @@ class AdminUserListAPIView(APIView):
         ).select_related(
             "customerprofile",
             "provider_profile",
+            "phone_record",
         ).order_by("-date_joined")
         serializer = UserAdminSerializer(users, many=True)
         return Response(serializer.data)

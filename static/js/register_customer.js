@@ -5,6 +5,7 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
   const username = document.getElementById("username").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const phone = document.getElementById("phone").value;
 
   const errorEl = document.getElementById("error");
   const successEl = document.getElementById("success");
@@ -23,6 +24,7 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
         username,
         email,
         password,
+        phone,
       }),
     });
 
@@ -36,6 +38,7 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
         data.detail ||
         data.username?.[0] ||
         data.email?.[0] ||
+        data.phone?.[0] ||
         "Registration failed"
       );
     }

@@ -83,3 +83,33 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}"
+
+
+class UserPhone(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="phone_record",
+    )
+    phone = models.CharField(max_length=15, unique=True, db_index=True)
+    is_verified = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.phone}"
+
+
+class PhoneOTP(models.Model):
+    class Purpose(models.TextChoices):
+        LOGIN = "LOGIN", "Login"
+
+    phone = models.CharField(max_length=15, db_index=True)
+    code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.LOGIN)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    attempts = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OTP {self.phone} ({self.purpose})"
