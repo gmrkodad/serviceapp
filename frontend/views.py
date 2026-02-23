@@ -52,6 +52,12 @@ def create_booking_page(request):
     })
 
 
+def change_password_page(request):
+    return render(request, "change_password.html", {
+        "show_nav": True
+    })
+
+
 # =====================
 # DASHBOARDS (WITH NAV)
 # =====================

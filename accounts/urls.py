@@ -15,6 +15,7 @@ from .views import (
     CustomerCityAPIView,
     SendLoginOTPAPIView,
     VerifyLoginOTPAPIView,
+    ChangePasswordAPIView,
 )
 
 
@@ -34,6 +35,7 @@ urlpatterns = [
     path("ip-location/", IpLocationAPIView.as_view()),
     path("auth/otp/send/", SendLoginOTPAPIView.as_view()),
     path("auth/otp/verify/", VerifyLoginOTPAPIView.as_view()),
+    path("me/change-password/", ChangePasswordAPIView.as_view()),
     path("me/customer-city/", CustomerCityAPIView.as_view()),
     path("register/customer/", CustomerSignupAPIView.as_view()),
     path("register/provider/", ProviderSignupAPIView.as_view()),

@@ -1,6 +1,12 @@
 (async function () {
   const usernameEl = document.getElementById("nav-username");
+  const navAvatarEl = document.getElementById("nav-avatar");
+  const profileNameEl = document.getElementById("profile-name");
+  const profileRoleEl = document.getElementById("profile-role");
   const homeLinkEl = document.getElementById("nav-home-link");
+  const accountLinkEl = document.getElementById("account-link");
+  const profileMenuBtn = document.getElementById("profile-menu-btn");
+  const profileMenu = document.getElementById("profile-menu");
   if (!usernameEl) return;
 
   async function refreshAccessToken() {
@@ -40,15 +46,62 @@
 
   if (!res.ok) return;
   const user = await res.json();
-  usernameEl.textContent = `Hi, ${user.username}`;
+  usernameEl.textContent = user.username;
+  if (profileNameEl) profileNameEl.textContent = user.username;
+  if (navAvatarEl) {
+    const initial = (user.username || "A").trim().charAt(0).toUpperCase();
+    navAvatarEl.textContent = initial || "A";
+  }
 
   if (homeLinkEl) {
     if (user.role === "ADMIN") {
       homeLinkEl.href = "/admin-panel/";
+      if (accountLinkEl) {
+        accountLinkEl.href = "/admin-panel/";
+        accountLinkEl.textContent = "Admin Panel";
+      }
+      if (profileRoleEl) profileRoleEl.textContent = "Administrator";
     } else if (user.role === "PROVIDER") {
       homeLinkEl.href = "/dashboard/provider/";
+      if (accountLinkEl) {
+        accountLinkEl.href = "/dashboard/provider/";
+        accountLinkEl.textContent = "Provider Dashboard";
+      }
+      if (profileRoleEl) profileRoleEl.textContent = "Provider account";
     } else {
       homeLinkEl.href = "/";
+      if (accountLinkEl) {
+        accountLinkEl.href = "/dashboard/customer/";
+        accountLinkEl.textContent = "Customer Dashboard";
+      }
+      if (profileRoleEl) profileRoleEl.textContent = "Customer account";
     }
+  }
+
+  if (profileMenuBtn && profileMenu) {
+    profileMenuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle("hidden");
+      profileMenuBtn.setAttribute(
+        "aria-expanded",
+        profileMenu.classList.contains("hidden") ? "false" : "true"
+      );
+    });
+
+    document.addEventListener("click", () => {
+      profileMenu.classList.add("hidden");
+      profileMenuBtn.setAttribute("aria-expanded", "false");
+    });
+
+    profileMenu.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        profileMenu.classList.add("hidden");
+        profileMenuBtn.setAttribute("aria-expanded", "false");
+      }
+    });
   }
 })();

@@ -9,7 +9,6 @@ from django.utils import timezone
 import json
 import random
 from datetime import timedelta
-from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -51,48 +50,62 @@ class ProviderSignupAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def _send_fast2sms_otp(phone, otp):
-    api_key = (getattr(settings, "FAST2SMS_API_KEY", "") or "").strip()
-    if not api_key:
-        return False, "FAST2SMS API key is not configured"
+def _send_whatsapp_otp(phone, otp):
+    token = (getattr(settings, "WHATSAPP_API_TOKEN", "") or "").strip()
+    phone_number_id = (getattr(settings, "WHATSAPP_PHONE_NUMBER_ID", "") or "").strip()
+    template_name = (getattr(settings, "WHATSAPP_TEMPLATE_NAME", "") or "").strip()
+    template_lang = (getattr(settings, "WHATSAPP_TEMPLATE_LANG", "en") or "en").strip()
 
-    data = urlencode({
-        "variables_values": otp,
-        "route": "otp",
-        "numbers": phone,
-        "flash": "0",
-    }).encode("utf-8")
-    req = Request(
-        "https://www.fast2sms.com/dev/bulkV2",
-        data=data,
-        method="POST",
-        headers={
-            "authorization": api_key,
-            "Content-Type": "application/x-www-form-urlencoded",
+    if not token or not phone_number_id or not template_name:
+        return False, "WhatsApp API config is incomplete"
+
+    # Stored number is Indian 10-digit, WhatsApp API expects country code format.
+    to_number = f"91{phone}" if len(phone) == 10 else phone
+    body = {
+        "messaging_product": "whatsapp",
+        "to": to_number,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {"code": template_lang},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": otp},
+                    ],
+                }
+            ],
         },
-    )
+    }
     try:
+        payload = json.dumps(body).encode("utf-8")
+        req = Request(
+            f"https://graph.facebook.com/v20.0/{phone_number_id}/messages",
+            data=payload,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+        )
         with urlopen(req, timeout=8) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-        if body.get("return") is True:
+            response_data = json.loads(resp.read().decode("utf-8"))
+        if response_data.get("messages"):
             return True, None
-        message = body.get("message", "SMS provider error")
-        if isinstance(message, list):
-            message = ", ".join(str(m) for m in message)
-        return False, str(message)
+        return False, "WhatsApp message was not accepted by provider"
     except HTTPError as exc:
         try:
             payload = json.loads(exc.read().decode("utf-8"))
-            message = payload.get("message", f"HTTP {exc.code}")
-            if isinstance(message, list):
-                message = ", ".join(str(m) for m in message)
-            return False, f"Fast2SMS error: {message}"
+            meta_error = payload.get("error", {})
+            message = meta_error.get("message", f"HTTP {exc.code}")
+            return False, f"WhatsApp API error: {message}"
         except Exception:
-            return False, f"Fast2SMS HTTP error: {exc.code}"
+            return False, f"WhatsApp API HTTP error: {exc.code}"
     except URLError as exc:
-        return False, f"Fast2SMS network error: {exc.reason}"
+        return False, f"WhatsApp network error: {exc.reason}"
     except Exception as exc:
-        return False, f"SMS provider request failed: {str(exc)}"
+        return False, f"WhatsApp request failed: {str(exc)}"
 
 
 class SendLoginOTPAPIView(APIView):
@@ -106,7 +119,7 @@ class SendLoginOTPAPIView(APIView):
             return Response({"phone": [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
 
         if not UserPhone.objects.filter(phone=phone, user__is_active=True).exists():
-            return Response({"error": "No active account found for this mobile number"}, status=404)
+            return Response({"error": "No active account found for this WhatsApp number"}, status=404)
 
         cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 60))
         latest = PhoneOTP.objects.filter(
@@ -128,7 +141,7 @@ class SendLoginOTPAPIView(APIView):
             expires_at=timezone.now() + timedelta(seconds=expiry_seconds),
         )
 
-        sent, reason = _send_fast2sms_otp(phone, otp)
+        sent, reason = _send_whatsapp_otp(phone, otp)
         if not sent:
             if settings.DEBUG:
                 return Response({
@@ -137,7 +150,7 @@ class SendLoginOTPAPIView(APIView):
                 })
             return Response({"error": reason or "Failed to send OTP"}, status=502)
 
-        return Response({"message": "OTP sent successfully"})
+        return Response({"message": "OTP sent successfully on WhatsApp"})
 
 
 class VerifyLoginOTPAPIView(APIView):
@@ -173,7 +186,7 @@ class VerifyLoginOTPAPIView(APIView):
 
         phone_record = UserPhone.objects.filter(phone=phone, user__is_active=True).select_related("user").first()
         if not phone_record:
-            return Response({"error": "No active account found for this mobile number"}, status=404)
+            return Response({"error": "No active account found for this WhatsApp number"}, status=404)
 
         user = phone_record.user
         refresh = RefreshToken.for_user(user)
@@ -199,6 +212,34 @@ class ProfileAPIView(APIView):
             "username": request.user.username,
             "role": effective_role
         })
+
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        current_password = request.data.get("current_password", "")
+        new_password = request.data.get("new_password", "")
+        confirm_password = request.data.get("confirm_password", "")
+
+        if not current_password or not new_password or not confirm_password:
+            return Response({"error": "All password fields are required"}, status=400)
+
+        if new_password != confirm_password:
+            return Response({"error": "New password and confirm password do not match"}, status=400)
+
+        if len(new_password) < 8:
+            return Response({"error": "New password must be at least 8 characters"}, status=400)
+
+        if not request.user.check_password(current_password):
+            return Response({"error": "Current password is incorrect"}, status=400)
+
+        if current_password == new_password:
+            return Response({"error": "New password must be different from current password"}, status=400)
+
+        request.user.set_password(new_password)
+        request.user.save(update_fields=["password"])
+        return Response({"message": "Password changed successfully"})
     
 
 

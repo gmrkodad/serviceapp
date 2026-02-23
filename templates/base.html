@@ -19,8 +19,7 @@
     </a>
 
     <!-- Right actions -->
-    <div class="flex items-center space-x-6">
-      <span id="nav-username" class="text-sm text-gray-600"></span>
+    <div class="flex items-center space-x-4">
 
       <!-- Notifications -->
       <div class="relative">
@@ -50,12 +49,44 @@
         </div>
       </div>
 
-      <!-- Logout -->
-      <button
-        id="logout-btn"
-        class="text-red-600 font-medium hover:underline">
-        Logout
-      </button>
+      <!-- Account Dropdown -->
+      <div class="relative">
+        <button
+          id="profile-menu-btn"
+          class="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 shadow-sm hover:shadow transition"
+          aria-haspopup="true"
+          aria-expanded="false">
+          <span id="nav-avatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-semibold flex items-center justify-center">A</span>
+          <span class="hidden sm:block text-sm font-medium pr-1" id="nav-username">Account</span>
+          <span class="text-xs text-slate-500 pr-1">▾</span>
+        </button>
+
+        <div
+          id="profile-menu"
+          class="hidden absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+          <div class="px-4 py-3 border-b bg-slate-50/70">
+            <p id="profile-name" class="text-sm font-semibold text-slate-900 truncate">Account</p>
+            <p id="profile-role" class="text-xs text-slate-500 truncate">Signed in</p>
+          </div>
+          <a
+            id="account-link"
+            href="/dashboard/customer/"
+            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+            Account
+          </a>
+          <a
+            href="/account/change-password/"
+            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+            Change Password
+          </a>
+          <div class="border-t"></div>
+          <button
+            id="logout-btn"
+            class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-rose-50">
+            Logout
+          </button>
+        </div>
+      </div>
 
     </div>
   </div>
