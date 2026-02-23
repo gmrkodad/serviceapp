@@ -5,9 +5,12 @@ function initNotifications() {
   const countSpan = document.getElementById("notif-count");
   const markAllBtn = document.getElementById("mark-all");
 
-  if (!bell || !dropdown || !list || !countSpan) {
-    return;
-  }
+  if (!bell || !dropdown || !list || !countSpan) return;
+
+  const POLL_INTERVAL_MS = 10000;
+  let isDropdownOpen = false;
+  let pollingTimer = null;
+  let inFlight = false;
 
   async function refreshAccessToken() {
     const refresh = localStorage.getItem("refresh");
@@ -38,7 +41,6 @@ function initNotifications() {
     };
 
     let res = await fetch(url, { ...options, headers });
-
     if (res.status !== 401) return res;
 
     const newAccess = await refreshAccessToken();
@@ -57,64 +59,122 @@ function initNotifications() {
     window.location.href = "/login/";
   }
 
-  bell.addEventListener("click", () => {
-    dropdown.classList.toggle("hidden");
-    loadNotifications();
-  });
+  function renderNotifications(data) {
+    list.innerHTML = "";
+    let unread = 0;
 
-  function loadNotifications() {
+    data.forEach((n) => {
+      const li = document.createElement("li");
+      li.className = `p-3 border-b cursor-pointer ${
+        n.is_read ? "text-gray-600" : "font-semibold bg-blue-50/40"
+      }`;
+      li.innerText = n.message;
+
+      if (!n.is_read) unread++;
+
+      li.onclick = () => markRead(n.id);
+      list.appendChild(li);
+    });
+
+    if (!data.length && isDropdownOpen) {
+      const li = document.createElement("li");
+      li.className = "p-3 text-sm text-gray-500";
+      li.innerText = "No notifications";
+      list.appendChild(li);
+    }
+
+    if (unread > 0) {
+      countSpan.innerText = unread;
+      countSpan.classList.remove("hidden");
+    } else {
+      countSpan.classList.add("hidden");
+    }
+  }
+
+  async function loadNotifications({ showLoading = false } = {}) {
+    if (inFlight) return;
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    authFetch("/api/accounts/notifications/")
-      .then((res) => {
-        if (res.status === 401) {
-          handleUnauthorized();
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data) return;
+    inFlight = true;
+    if (showLoading && isDropdownOpen) {
+      list.innerHTML = "<li class='p-3 text-sm text-gray-500'>Loading...</li>";
+    }
 
-        list.innerHTML = "";
-        let unread = 0;
+    try {
+      const res = await authFetch("/api/accounts/notifications/");
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+      if (!res.ok) return;
 
-        data.forEach((n) => {
-          const li = document.createElement("li");
-          li.className = `p-3 border-b cursor-pointer ${
-            n.is_read ? "text-gray-600" : "font-semibold"
-          }`;
-          li.innerText = n.message;
-
-          if (!n.is_read) unread++;
-
-          li.onclick = () => markRead(n.id);
-          list.appendChild(li);
-        });
-
-        if (unread > 0) {
-          countSpan.innerText = unread;
-          countSpan.classList.remove("hidden");
-        } else {
-          countSpan.classList.add("hidden");
-        }
-      });
+      const data = await res.json();
+      renderNotifications(data || []);
+    } finally {
+      inFlight = false;
+    }
   }
 
-  function markRead(id) {
-    authFetch(`/api/accounts/notifications/read/${id}/`, {
+  async function markRead(id) {
+    const res = await authFetch(`/api/accounts/notifications/read/${id}/`, {
       method: "POST",
-    }).then(loadNotifications);
+    });
+    if (res.status === 401) {
+      handleUnauthorized();
+      return;
+    }
+    loadNotifications();
   }
+
+  function startPolling() {
+    if (pollingTimer) return;
+    pollingTimer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadNotifications();
+      }
+    }, POLL_INTERVAL_MS);
+  }
+
+  function stopPolling() {
+    if (!pollingTimer) return;
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+
+  bell.addEventListener("click", () => {
+    isDropdownOpen = !dropdown.classList.contains("hidden");
+    dropdown.classList.toggle("hidden");
+    isDropdownOpen = !dropdown.classList.contains("hidden");
+    if (isDropdownOpen) {
+      loadNotifications({ showLoading: true });
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      loadNotifications();
+    }
+  });
 
   if (markAllBtn) {
-    markAllBtn.addEventListener("click", () => {
-      authFetch("/api/accounts/notifications/read-all/", {
+    markAllBtn.addEventListener("click", async () => {
+      const res = await authFetch("/api/accounts/notifications/read-all/", {
         method: "POST",
-      }).then(loadNotifications);
+      });
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+      loadNotifications();
     });
   }
+
+  // Initial unread count refresh and background updates.
+  loadNotifications();
+  startPolling();
+
+  window.addEventListener("beforeunload", stopPolling);
 }
 
 if (document.readyState === "loading") {
