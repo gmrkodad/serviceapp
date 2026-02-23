@@ -7,7 +7,7 @@ function initNotifications() {
 
   if (!bell || !dropdown || !list || !countSpan) return;
 
-  const POLL_INTERVAL_MS = 10000;
+  const POLL_INTERVAL_MS = 2000;
   let isDropdownOpen = false;
   let pollingTimer = null;
   let inFlight = false;
