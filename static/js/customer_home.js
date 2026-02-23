@@ -129,19 +129,59 @@ async function detectLocationByBrowser() {
   });
 }
 
-// Icon mapping (category name -> icon)
 const categoryIcons = {
-  "Home Cleaning": "&#129532;",
-  Plumbing: "&#128703;",
-  Electrician: "&#9889;",
-  "AC Repair": "&#10052;",
-  Beauty: "&#128132;",
-  "Appliance Repair": "&#128295;",
-  Painting: "&#127912;",
-  "Pest Control": "&#128029;",
-  Carpentry: "&#128296;",
-  Default: "&#128736;",
+  "Home Cleaning": {
+    bg: "from-cyan-100 to-blue-100",
+    icon: `<path d="M3 11l9-8 9 8M5 10v10h14V10" /><path d="M9 20v-6h6v6" />`,
+  },
+  Plumbing: {
+    bg: "from-sky-100 to-teal-100",
+    icon: `<path d="M7 4h10v4H7zM9 8v6m6-6v6M7 14h10v6H7z" />`,
+  },
+  Electrician: {
+    bg: "from-yellow-100 to-amber-100",
+    icon: `<path d="M13 2L6 13h5l-1 9 8-12h-5l0-8z" />`,
+  },
+  "AC Repair": {
+    bg: "from-blue-100 to-indigo-100",
+    icon: `<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1L19.1 4.9" />`,
+  },
+  Beauty: {
+    bg: "from-pink-100 to-rose-100",
+    icon: `<path d="M12 3l2.3 4.7L19 10l-4.7 2.3L12 17l-2.3-4.7L5 10l4.7-2.3z" />`,
+  },
+  "Appliance Repair": {
+    bg: "from-slate-100 to-zinc-100",
+    icon: `<path d="M4 6h16v14H4zM9 2v4m6-4v4M8 11h8" />`,
+  },
+  Painting: {
+    bg: "from-violet-100 to-fuchsia-100",
+    icon: `<path d="M3 14l7-7 4 4-7 7H3zM14 7l2-2 3 3-2 2z" />`,
+  },
+  "Pest Control": {
+    bg: "from-lime-100 to-emerald-100",
+    icon: `<path d="M12 8v8M8 10l-3-3M16 10l3-3M8 14l-3 3M16 14l3 3M9 8h6M8 18h8" />`,
+  },
+  Carpentry: {
+    bg: "from-orange-100 to-amber-100",
+    icon: `<path d="M3 21l9-9m0 0l2-2 5 5-2 2m-5-5L8 8l2-2 4 4" />`,
+  },
+  Default: {
+    bg: "from-slate-100 to-gray-100",
+    icon: `<path d="M14.7 6.3l3 3-8.4 8.4H6.3v-3zM13.3 4.9l1.4-1.4 3 3-1.4 1.4z" />`,
+  },
 };
+
+function getCategoryIconMarkup(name) {
+  const item = categoryIcons[name] || categoryIcons.Default;
+  return `
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br ${item.bg} flex items-center justify-center shadow-inner mb-4">
+      <svg viewBox="0 0 24 24" class="w-8 h-8 text-slate-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        ${item.icon}
+      </svg>
+    </div>
+  `;
+}
 
 (async () => {
   const ok = await ensureAccessTokenOrRedirect();
@@ -216,19 +256,19 @@ function renderCategories(query) {
   if (noResults) noResults.classList.add("hidden");
 
   filtered.forEach((cat) => {
-    const icon = categoryIcons[cat.name] || categoryIcons.Default;
+    const iconMarkup = getCategoryIconMarkup(cat.name);
 
     const card = document.createElement("div");
     card.className = `
-        bg-white rounded-2xl shadow
-        hover:shadow-xl hover:-translate-y-1
-        transition cursor-pointer
+        bg-white/90 rounded-2xl border border-slate-100 shadow
+        hover:shadow-xl hover:-translate-y-1 hover:border-blue-200
+        transition-all cursor-pointer
         p-6 flex flex-col items-center text-center
       `;
 
     card.innerHTML = `
-        <div class="text-5xl mb-4">${icon}</div>
-        <h3 class="text-lg font-semibold">${cat.name}</h3>
+        ${iconMarkup}
+        <h3 class="text-lg font-semibold text-slate-900">${cat.name}</h3>
       `;
 
     card.onclick = () => {
