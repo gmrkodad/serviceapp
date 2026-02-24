@@ -69,6 +69,27 @@ class ProviderProfile(models.Model):
 
     def __str__(self):
         return f"ProviderProfile({self.user.username})"
+
+
+class ProviderServicePrice(models.Model):
+    provider_profile = models.ForeignKey(
+        ProviderProfile,
+        on_delete=models.CASCADE,
+        related_name="service_prices",
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        related_name="provider_prices",
+    )
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("provider_profile", "service")
+
+    def __str__(self):
+        return f"{self.provider_profile.user.username} - {self.service.name}: {self.price}"
    
 
 class Notification(models.Model):
