@@ -53,12 +53,16 @@ const providersList = document.getElementById("providers-list");
 const empty = document.getElementById("empty");
 const bannerTitle = document.getElementById("category-title");
 const bannerIcon = document.getElementById("category-icon");
+const providerSortEl = document.getElementById("provider-sort");
+const providerMinRatingEl = document.getElementById("provider-min-rating");
+const providerMaxPriceEl = document.getElementById("provider-max-price");
 
 const parts = window.location.pathname.split("/").filter(Boolean);
 const categoryId = Number(parts[1]);
 const params = new URLSearchParams(window.location.search);
 let selectedServiceId = Number(params.get("service")) || null;
 let activeCategory = null;
+let providersCache = [];
 
 const ICONS = {
   "Home Cleaning": {
@@ -132,7 +136,7 @@ function renderServices() {
     li.innerHTML = `
       <div class="flex justify-between items-center">
         <span>${s.name}</span>
-        <span class="text-sm text-gray-500">&#8377;${s.base_price}</span>
+        <span class="text-sm text-gray-500">Starts from &#8377;${s.starts_from ?? s.base_price}</span>
       </div>
     `;
 
@@ -206,6 +210,32 @@ async function loadProviders() {
   }
 
   const providers = await res.json();
+  providersCache = providers || [];
+  renderProviders();
+}
+
+function renderProviders() {
+  const sortValue = providerSortEl?.value || "";
+  const minRating = Number(providerMinRatingEl?.value || 0);
+  const maxPrice = Number(providerMaxPriceEl?.value || 0);
+
+  let providers = [...providersCache];
+
+  if (minRating) {
+    providers = providers.filter((p) => Number(p.rating || 0) >= minRating);
+  }
+  if (maxPrice) {
+    providers = providers.filter((p) => Number(p.price || 0) <= maxPrice);
+  }
+
+  if (sortValue === "price_asc") {
+    providers.sort((a, b) => Number(a.price || Infinity) - Number(b.price || Infinity));
+  } else if (sortValue === "price_desc") {
+    providers.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+  } else if (sortValue === "rating_desc") {
+    providers.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+  }
+
   if (!providers.length) {
     providersList.innerHTML = "";
     empty.classList.remove("hidden");
@@ -224,6 +254,9 @@ async function loadProviders() {
         <div>
           <h3 class="font-semibold text-lg">${p.username}</h3>
           <p class="text-sm text-gray-600">&#11088; ${p.rating || "New"} rating</p>
+          <p class="text-sm text-emerald-700 font-medium mt-1">
+            Price: &#8377;${p.price ?? "N/A"}
+          </p>
         </div>
       </div>
       <button
@@ -250,6 +283,12 @@ async function loadProviders() {
 
   await loadProviders();
 })();
+
+[providerSortEl, providerMinRatingEl, providerMaxPriceEl].forEach((el) => {
+  if (!el) return;
+  const eventName = el.tagName === "INPUT" ? "input" : "change";
+  el.addEventListener(eventName, renderProviders);
+});
 
 function bookService(providerId) {
   localStorage.setItem("selectedService", selectedServiceId);

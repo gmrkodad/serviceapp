@@ -12,7 +12,7 @@ from datetime import timedelta
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, Notification, ProviderProfile, CustomerProfile, PhoneOTP, UserPhone
+from .models import User, Notification, ProviderProfile, CustomerProfile, PhoneOTP, UserPhone, ProviderServicePrice
 from .serializers import ProviderListSerializer
 from .serializers import CustomerSignupSerializer, ProviderSignupSerializer
 from .serializers import NotificationSerializer
@@ -41,7 +41,9 @@ class ProviderSignupAPIView(APIView):
     def post(self, request):
         serializer = ProviderSignupSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()
+            profile, _ = ProviderProfile.objects.get_or_create(user=user)
+            _sync_provider_service_prices(profile)
             return Response(
                 {"message": "Provider registered successfully"},
                 status=status.HTTP_201_CREATED
@@ -371,7 +373,68 @@ class AdminProviderServicesAPIView(APIView):
 
         profile, _ = ProviderProfile.objects.get_or_create(user=user)
         profile.services.set(services)
+        _sync_provider_service_prices(profile)
         return Response({"message": "Provider services updated"})
+
+
+class AdminProviderServicePricesAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, role="PROVIDER")
+        except User.DoesNotExist:
+            return Response({"error": "Provider not found"}, status=404)
+
+        profile, _ = ProviderProfile.objects.get_or_create(user=user)
+        _sync_provider_service_prices(profile)
+        prices = ProviderServicePrice.objects.filter(
+            provider_profile=profile
+        ).select_related("service")
+        return Response({
+            "prices": [
+                {
+                    "service_id": p.service_id,
+                    "service_name": p.service.name,
+                    "price": float(p.price),
+                    "base_price": float(p.service.base_price),
+                }
+                for p in prices
+            ]
+        })
+
+    def post(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, role="PROVIDER")
+        except User.DoesNotExist:
+            return Response({"error": "Provider not found"}, status=404)
+
+        profile, _ = ProviderProfile.objects.get_or_create(user=user)
+        _sync_provider_service_prices(profile)
+        items = request.data.get("prices", [])
+        if not isinstance(items, list):
+            return Response({"error": "prices must be a list"}, status=400)
+
+        provided_service_ids = set(profile.services.values_list("id", flat=True))
+        for item in items:
+            service_id = item.get("service_id")
+            price = item.get("price")
+            if service_id not in provided_service_ids:
+                return Response({"error": "Invalid service for this provider"}, status=400)
+            try:
+                price_val = float(price)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid price value"}, status=400)
+            if price_val <= 0:
+                return Response({"error": "Price must be greater than 0"}, status=400)
+
+            ProviderServicePrice.objects.update_or_create(
+                provider_profile=profile,
+                service_id=service_id,
+                defaults={"price": price_val},
+            )
+
+        return Response({"message": "Provider prices updated"})
 
 
 class ProviderServicesMeAPIView(APIView):
@@ -379,9 +442,21 @@ class ProviderServicesMeAPIView(APIView):
 
     def get(self, request):
         profile, _ = ProviderProfile.objects.get_or_create(user=request.user)
+        _sync_provider_service_prices(profile)
         services = profile.services.all()
+        price_map = {
+            p.service_id: p.price
+            for p in ProviderServicePrice.objects.filter(provider_profile=profile)
+        }
         return Response({
-            "services": [{"id": s.id, "name": s.name} for s in services]
+            "services": [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "price": float(price_map.get(s.id, s.base_price)),
+                }
+                for s in services
+            ]
         })
 
     def post(self, request):
@@ -395,7 +470,56 @@ class ProviderServicesMeAPIView(APIView):
 
         profile, _ = ProviderProfile.objects.get_or_create(user=request.user)
         profile.services.set(services)
+        _sync_provider_service_prices(profile)
         return Response({"message": "Services updated"})
+
+
+class ProviderServicePriceMeAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsProvider]
+
+    def get(self, request):
+        profile, _ = ProviderProfile.objects.get_or_create(user=request.user)
+        _sync_provider_service_prices(profile)
+        prices = ProviderServicePrice.objects.filter(provider_profile=profile).select_related("service")
+        return Response({
+            "prices": [
+                {
+                    "service_id": p.service_id,
+                    "service_name": p.service.name,
+                    "price": float(p.price),
+                    "base_price": float(p.service.base_price),
+                }
+                for p in prices
+            ]
+        })
+
+    def post(self, request):
+        profile, _ = ProviderProfile.objects.get_or_create(user=request.user)
+        _sync_provider_service_prices(profile)
+        items = request.data.get("prices", [])
+        if not isinstance(items, list):
+            return Response({"error": "prices must be a list"}, status=400)
+
+        provided_service_ids = set(profile.services.values_list("id", flat=True))
+        for item in items:
+            service_id = item.get("service_id")
+            price = item.get("price")
+            if service_id not in provided_service_ids:
+                return Response({"error": "Invalid service for this provider"}, status=400)
+            try:
+                price_val = float(price)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid price value"}, status=400)
+            if price_val <= 0:
+                return Response({"error": "Price must be greater than 0"}, status=400)
+
+            ProviderServicePrice.objects.update_or_create(
+                provider_profile=profile,
+                service_id=service_id,
+                defaults={"price": price_val},
+            )
+
+        return Response({"message": "Service prices updated"})
 
 
 class IpLocationAPIView(APIView):
@@ -432,3 +556,32 @@ class CustomerCityAPIView(APIView):
         profile.city = city
         profile.save()
         return Response({"message": "City updated", "city": profile.city})
+def _sync_provider_service_prices(profile):
+    service_ids = list(profile.services.values_list("id", flat=True))
+    if not service_ids:
+        ProviderServicePrice.objects.filter(provider_profile=profile).delete()
+        return
+
+    # Remove prices for services no longer provided.
+    ProviderServicePrice.objects.filter(provider_profile=profile).exclude(service_id__in=service_ids).delete()
+
+    # Ensure each selected service has at least one price entry.
+    existing_ids = set(
+        ProviderServicePrice.objects.filter(
+            provider_profile=profile,
+            service_id__in=service_ids,
+        ).values_list("service_id", flat=True)
+    )
+    missing_ids = [sid for sid in service_ids if sid not in existing_ids]
+    if not missing_ids:
+        return
+
+    services = Service.objects.filter(id__in=missing_ids)
+    ProviderServicePrice.objects.bulk_create([
+        ProviderServicePrice(
+            provider_profile=profile,
+            service=s,
+            price=s.base_price,
+        )
+        for s in services
+    ])

@@ -42,7 +42,11 @@ class ServiceProvidersAPIView(APIView):
         if city:
             providers = providers.filter(city__iexact=city)
 
-        serializer = ProviderListSerializer(providers, many=True)
+        serializer = ProviderListSerializer(
+            providers,
+            many=True,
+            context={"service_id": service_id},
+        )
         return Response(serializer.data)
 
 

@@ -139,6 +139,14 @@
                 <button class="px-2 py-1 text-xs rounded bg-slate-100" data-services-cancel="${u.id}">Cancel</button>
               </div>
             </div>
+            <div class="mt-2 hidden" data-prices-editor="${u.id}">
+              <div class="space-y-2" data-prices-list="${u.id}"></div>
+              <div class="mt-2 flex gap-2">
+                <button class="px-2 py-1 text-xs rounded bg-slate-900 text-white" data-prices-save="${u.id}">Save Prices</button>
+                <button class="px-2 py-1 text-xs rounded bg-slate-100" data-prices-cancel="${u.id}">Cancel</button>
+              </div>
+              <p class="text-xs text-slate-500 mt-1" data-prices-msg="${u.id}"></p>
+            </div>
           `
           : "-";
 
@@ -150,6 +158,7 @@
               ${u.is_active ? "Deactivate" : "Activate"}
             </button>
             ${u.role === "PROVIDER" ? `<button class="px-3 py-1 rounded text-xs bg-blue-100 text-blue-700" data-services-edit="${u.id}">Edit Services</button>` : ""}
+            ${u.role === "PROVIDER" ? `<button class="px-3 py-1 rounded text-xs bg-violet-100 text-violet-700" data-prices-edit="${u.id}">Edit Prices</button>` : ""}
             <button class="px-3 py-1 rounded text-xs bg-rose-100 text-rose-700" data-delete-user="${u.id}" data-username="${u.username}">
               Delete
             </button>
@@ -171,6 +180,7 @@
     bindToggleButtons();
     bindDeleteButtons();
     bindServiceEditors();
+    bindPriceEditors();
   }
 
   function bindToggleButtons() {
@@ -248,6 +258,95 @@
         }
 
         loadUsers();
+      });
+    });
+  }
+
+  function bindPriceEditors() {
+    document.querySelectorAll("[data-prices-edit]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const userId = btn.getAttribute("data-prices-edit");
+        const editor = document.querySelector(`[data-prices-editor="${userId}"]`);
+        const listEl = document.querySelector(`[data-prices-list="${userId}"]`);
+        const msgEl = document.querySelector(`[data-prices-msg="${userId}"]`);
+        if (!editor || !listEl) return;
+
+        editor.classList.toggle("hidden");
+        if (editor.classList.contains("hidden")) return;
+        listEl.innerHTML = "<div class='text-xs text-slate-500'>Loading prices...</div>";
+        if (msgEl) msgEl.textContent = "";
+
+        const res = await authFetch(`/api/accounts/admin/providers/${userId}/service-prices/`);
+        if (res.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+        if (!res.ok) {
+          listEl.innerHTML = "<div class='text-xs text-red-600'>Failed to load prices.</div>";
+          return;
+        }
+
+        const data = await res.json();
+        const prices = data.prices || [];
+        if (!prices.length) {
+          listEl.innerHTML = "<div class='text-xs text-slate-500'>No services to price.</div>";
+          return;
+        }
+
+        listEl.innerHTML = prices.map((p) => `
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center border rounded p-2">
+            <div class="sm:col-span-2">
+              <p class="text-xs font-medium text-slate-800">${p.service_name}</p>
+              <p class="text-[11px] text-slate-500">Base: Rs.${p.base_price}</p>
+            </div>
+            <input type="number" min="1" step="1" class="border rounded p-1 text-xs" data-admin-price-input="${userId}" data-service-id="${p.service_id}" value="${p.price}">
+          </div>
+        `).join("");
+      });
+    });
+
+    document.querySelectorAll("[data-prices-cancel]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const userId = btn.getAttribute("data-prices-cancel");
+        const editor = document.querySelector(`[data-prices-editor="${userId}"]`);
+        if (editor) editor.classList.add("hidden");
+      });
+    });
+
+    document.querySelectorAll("[data-prices-save]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const userId = btn.getAttribute("data-prices-save");
+        const msgEl = document.querySelector(`[data-prices-msg="${userId}"]`);
+        const inputs = document.querySelectorAll(`[data-admin-price-input="${userId}"]`);
+        const prices = Array.from(inputs).map((input) => ({
+          service_id: Number(input.getAttribute("data-service-id")),
+          price: Number(input.value),
+        }));
+
+        const invalid = prices.find((p) => !p.price || p.price <= 0);
+        if (invalid) {
+          if (msgEl) msgEl.textContent = "Enter valid prices greater than 0.";
+          return;
+        }
+
+        const res = await authFetch(`/api/accounts/admin/providers/${userId}/service-prices/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prices }),
+        });
+
+        if (res.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+
+        if (res.ok) {
+          if (msgEl) msgEl.textContent = "Prices updated";
+          loadUsers();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          if (msgEl) msgEl.textContent = data.error || "Price update failed";
+        }
       });
     });
   }

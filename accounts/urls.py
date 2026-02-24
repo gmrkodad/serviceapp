@@ -10,12 +10,14 @@ from .views import (
     AdminUserToggleAPIView,
     AdminUserDeleteAPIView,
     AdminProviderServicesAPIView,
+    AdminProviderServicePricesAPIView,
     ProviderServicesMeAPIView,
     IpLocationAPIView,
     CustomerCityAPIView,
     SendLoginOTPAPIView,
     VerifyLoginOTPAPIView,
     ChangePasswordAPIView,
+    ProviderServicePriceMeAPIView,
 )
 
 
@@ -31,7 +33,9 @@ urlpatterns = [
     path("admin/users/<int:user_id>/toggle/", AdminUserToggleAPIView.as_view()),
     path("admin/users/<int:user_id>/", AdminUserDeleteAPIView.as_view()),
     path("admin/providers/<int:user_id>/services/", AdminProviderServicesAPIView.as_view()),
+    path("admin/providers/<int:user_id>/service-prices/", AdminProviderServicePricesAPIView.as_view()),
     path("providers/me/services/", ProviderServicesMeAPIView.as_view()),
+    path("providers/me/service-prices/", ProviderServicePriceMeAPIView.as_view()),
     path("ip-location/", IpLocationAPIView.as_view()),
     path("auth/otp/send/", SendLoginOTPAPIView.as_view()),
     path("auth/otp/verify/", VerifyLoginOTPAPIView.as_view()),
