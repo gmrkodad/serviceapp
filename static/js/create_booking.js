@@ -104,9 +104,17 @@ if (useCurrentLocationBtn && customerLocationInput) {
     const lng = pos.coords.longitude.toFixed(6);
     const accuracy = Math.round(pos.coords.accuracy || 0);
 
+    if (accuracy > 150) {
+      useCurrentLocationBtn.disabled = false;
+      useCurrentLocationBtn.textContent = "Use Current Location";
+      errorEl.textContent = `Location accuracy is too low (${accuracy}m). Please retry.`;
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
     const geocoded = await reverseGeocodeAddress(lat, lng);
     const resolvedAddress = geocoded?.display_name || `${lat}, ${lng}`;
-    customerLocationInput.value = `${resolvedAddress} (±${accuracy}m)`;
+    customerLocationInput.value = resolvedAddress;
 
     if (!addressInput.value.trim() && geocoded?.display_name) {
       addressInput.value = geocoded.display_name;
