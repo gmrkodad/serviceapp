@@ -63,6 +63,17 @@ async function getBestBrowserPosition() {
   return best;
 }
 
+async function reverseGeocodeAddress(lat, lng) {
+  const res = await fetch(
+    `/api/accounts/geo/reverse/?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
+
 const savedCity = localStorage.getItem("location_city");
 if (savedCity && customerLocationInput) {
   customerLocationInput.value = savedCity;
@@ -92,7 +103,19 @@ if (useCurrentLocationBtn && customerLocationInput) {
     const lat = pos.coords.latitude.toFixed(6);
     const lng = pos.coords.longitude.toFixed(6);
     const accuracy = Math.round(pos.coords.accuracy || 0);
-    customerLocationInput.value = `${lat}, ${lng} (±${accuracy}m)`;
+
+    const geocoded = await reverseGeocodeAddress(lat, lng);
+    const resolvedAddress = geocoded?.display_name || `${lat}, ${lng}`;
+    customerLocationInput.value = `${resolvedAddress} (±${accuracy}m)`;
+
+    if (!addressInput.value.trim() && geocoded?.display_name) {
+      addressInput.value = geocoded.display_name;
+    }
+
+    if (geocoded?.city) {
+      localStorage.setItem("location_city", geocoded.city);
+    }
+
     useCurrentLocationBtn.disabled = false;
     useCurrentLocationBtn.textContent = "Use Current Location";
   });

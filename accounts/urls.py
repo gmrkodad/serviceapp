@@ -17,6 +17,7 @@ from .views import (
     VerifyLoginOTPAPIView,
     ChangePasswordAPIView,
     ProviderServicePriceMeAPIView,
+    ReverseGeocodeAPIView,
 )
 
 
@@ -39,6 +40,7 @@ urlpatterns = [
     path("auth/otp/verify/", VerifyLoginOTPAPIView.as_view()),
     path("me/change-password/", ChangePasswordAPIView.as_view()),
     path("me/customer-city/", CustomerCityAPIView.as_view()),
+    path("geo/reverse/", ReverseGeocodeAPIView.as_view()),
     path("register/customer/", CustomerSignupAPIView.as_view()),
     path("register/provider/", ProviderSignupAPIView.as_view()),
 ]

@@ -536,6 +536,51 @@ class CustomerCityAPIView(APIView):
         profile.city = city
         profile.save()
         return Response({"message": "City updated", "city": profile.city})
+
+
+class ReverseGeocodeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        lat = request.query_params.get("lat")
+        lon = request.query_params.get("lon")
+
+        try:
+            lat_val = float(lat)
+            lon_val = float(lon)
+        except (TypeError, ValueError):
+            return Response({"error": "lat and lon are required"}, status=400)
+
+        url = (
+            "https://nominatim.openstreetmap.org/reverse"
+            f"?format=jsonv2&lat={lat_val}&lon={lon_val}&zoom=18&addressdetails=1"
+        )
+        req = Request(
+            url,
+            headers={
+                "User-Agent": "serviceapp/1.0 (support@serviceapp.local)",
+                "Accept": "application/json",
+            },
+        )
+
+        try:
+            with urlopen(req, timeout=8) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+        except Exception:
+            return Response({"error": "Unable to resolve address"}, status=502)
+
+        addr = payload.get("address", {}) or {}
+        city = addr.get("city") or addr.get("town") or addr.get("village") or addr.get("county") or ""
+
+        return Response(
+            {
+                "display_name": payload.get("display_name", ""),
+                "city": city,
+                "postcode": addr.get("postcode", ""),
+                "state": addr.get("state", ""),
+                "country": addr.get("country", ""),
+            }
+        )
 def _sync_provider_service_prices(profile):
     service_ids = list(profile.services.values_list("id", flat=True))
     if not service_ids:
