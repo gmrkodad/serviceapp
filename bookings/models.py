@@ -15,6 +15,11 @@ class Booking(models.Model):
         COMPLETED = "COMPLETED", "Completed"
         CANCELLED = "CANCELLED", "Cancelled"
 
+    class TimeSlot(models.TextChoices):
+        MORNING = "MORNING", "Morning (8 AM - 12 PM)"
+        AFTERNOON = "AFTERNOON", "Afternoon (12 PM - 4 PM)"
+        EVENING = "EVENING", "Evening (4 PM - 8 PM)"
+
     customer = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -32,6 +37,11 @@ class Booking(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     address = models.TextField()
     scheduled_date = models.DateField()
+    time_slot = models.CharField(
+        max_length=20,
+        choices=TimeSlot.choices,
+        default=TimeSlot.MORNING
+    )
 
     status = models.CharField(
         max_length=20,

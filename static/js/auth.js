@@ -89,7 +89,7 @@ if (sendOtpBtn) {
     otpErrorEl.classList.add("hidden");
 
     if (!phone) {
-      otpErrorEl.textContent = "Enter mobile number";
+      otpErrorEl.textContent = "Enter WhatsApp number";
       otpErrorEl.classList.remove("hidden");
       return;
     }
@@ -109,7 +109,7 @@ if (sendOtpBtn) {
 
       otpInfoEl.textContent = data.dev_otp
         ? `OTP sent (debug): ${data.dev_otp}`
-        : "OTP sent to your mobile number";
+        : "OTP sent to your WhatsApp number";
       otpInfoEl.classList.remove("hidden");
     } catch (err) {
       otpErrorEl.textContent = err.message;
@@ -130,7 +130,7 @@ if (otpForm) {
     const phone = otpPhoneEl.value.trim();
     const otp = otpCodeEl.value.trim();
     if (!phone || !otp) {
-      otpErrorEl.textContent = "Enter mobile number and OTP";
+      otpErrorEl.textContent = "Enter WhatsApp number and OTP";
       otpErrorEl.classList.remove("hidden");
       return;
     }

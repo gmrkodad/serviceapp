@@ -4,29 +4,141 @@ if (!token) window.location.href = "/login/";
 const errorEl = document.getElementById("error");
 const successEl = document.getElementById("success");
 const form = document.getElementById("booking-form");
+const dateInput = document.getElementById("date");
+const addressInput = document.getElementById("address");
+const customerLocationInput = document.getElementById("customer-location");
+const useCurrentLocationBtn = document.getElementById("use-current-location");
+const timeSlotInput = document.getElementById("time-slot");
+const landmarkInput = document.getElementById("landmark");
+const notesInput = document.getElementById("notes");
+const submitBtn = document.getElementById("submit-booking");
 
-// ✅ GET SELECTION FROM PREVIOUS PAGE
-const serviceId = localStorage.getItem("selectedService");
-const providerId = localStorage.getItem("selectedProvider");
+const selectedServiceNameEl = document.getElementById("selected-service-name");
+const selectedProviderNameEl = document.getElementById("selected-provider-name");
+const selectedProviderRatingEl = document.getElementById("selected-provider-rating");
+const selectedProviderPriceEl = document.getElementById("selected-provider-price");
+const selectedProviderLocationEl = document.getElementById("selected-provider-location");
+
+const serviceId = Number(localStorage.getItem("selectedService"));
+const providerId = Number(localStorage.getItem("selectedProvider"));
 
 if (!serviceId || !providerId) {
-  errorEl.textContent = "Service or provider not selected";
+  errorEl.textContent = "Service or provider not selected. Please choose again.";
   errorEl.classList.remove("hidden");
-  throw new Error("Missing booking context");
+  setTimeout(() => {
+    window.location.href = "/";
+  }, 1200);
+}
+
+const today = new Date().toISOString().split("T")[0];
+dateInput.min = today;
+if (!dateInput.value) dateInput.value = today;
+
+const savedCity = localStorage.getItem("location_city");
+if (savedCity && customerLocationInput) {
+  customerLocationInput.value = savedCity;
+}
+
+if (useCurrentLocationBtn && customerLocationInput) {
+  useCurrentLocationBtn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      errorEl.textContent = "Geolocation is not supported in this browser.";
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    errorEl.classList.add("hidden");
+    useCurrentLocationBtn.disabled = true;
+    useCurrentLocationBtn.textContent = "Detecting...";
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(5);
+        const lng = pos.coords.longitude.toFixed(5);
+        customerLocationInput.value = `${lat}, ${lng}`;
+        useCurrentLocationBtn.disabled = false;
+        useCurrentLocationBtn.textContent = "Use Current Location";
+      },
+      () => {
+        useCurrentLocationBtn.disabled = false;
+        useCurrentLocationBtn.textContent = "Use Current Location";
+        errorEl.textContent = "Unable to fetch current location. Please allow location permission.";
+        errorEl.classList.remove("hidden");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
+
+async function loadBookingSummary() {
+  if (!serviceId || !providerId) return;
+
+  try {
+    const categoriesRes = await fetch("/api/services/categories/", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!categoriesRes.ok) return;
+
+    const categories = await categoriesRes.json();
+    let service = null;
+
+    for (const category of categories || []) {
+      const found = (category.services || []).find((s) => s.id === serviceId);
+      if (found) {
+        service = found;
+        break;
+      }
+    }
+
+    selectedServiceNameEl.textContent = service ? service.name : `Service #${serviceId}`;
+
+    const providersRes = await fetch(`/api/services/${serviceId}/providers/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!providersRes.ok) return;
+
+    const providers = await providersRes.json();
+    const provider = (providers || []).find((p) => Number(p.user_id) === providerId);
+
+    if (!provider) {
+      selectedProviderNameEl.textContent = `Provider #${providerId}`;
+      return;
+    }
+
+    selectedProviderNameEl.textContent = provider.username || `Provider #${providerId}`;
+    selectedProviderRatingEl.textContent = provider.rating ? `${provider.rating} / 5` : "New";
+    selectedProviderPriceEl.textContent =
+      provider.price !== null && provider.price !== undefined ? `Rs.${provider.price}` : "N/A";
+    selectedProviderLocationEl.textContent = provider.city || "Not specified";
+  } catch (_) {
+    selectedServiceNameEl.textContent = `Service #${serviceId}`;
+    selectedProviderNameEl.textContent = `Provider #${providerId}`;
+    selectedProviderLocationEl.textContent = "-";
+  }
 }
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!serviceId || !providerId) return;
 
   errorEl.classList.add("hidden");
   successEl.classList.add("hidden");
 
+  const lines = [addressInput.value.trim()];
+  if (customerLocationInput.value.trim()) lines.push(`Customer location: ${customerLocationInput.value.trim()}`);
+  if (landmarkInput.value.trim()) lines.push(`Landmark: ${landmarkInput.value.trim()}`);
+  if (notesInput.value.trim()) lines.push(`Notes: ${notesInput.value.trim()}`);
+
   const payload = {
     service: serviceId,
     provider: providerId,
-    scheduled_date: date.value,
-    address: address.value,
+    scheduled_date: dateInput.value,
+    time_slot: timeSlotInput.value,
+    address: lines.join("\n"),
   };
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Booking...";
 
   try {
     const res = await fetch("/api/bookings/create/", {
@@ -40,7 +152,6 @@ form.addEventListener("submit", async (e) => {
 
     const contentType = res.headers.get("content-type");
     let data = {};
-
     if (contentType && contentType.includes("application/json")) {
       data = await res.json();
     }
@@ -48,21 +159,30 @@ form.addEventListener("submit", async (e) => {
     if (!res.ok) {
       throw new Error(
         data.provider?.[0] ||
-        data.service?.[0] ||
+          data.service?.[0] ||
         data.scheduled_date?.[0] ||
-        data.address?.[0] ||
-        "Booking failed"
+          data.time_slot?.[0] ||
+          data.address?.[0] ||
+          "Booking failed"
       );
     }
 
-    successEl.textContent = "Booking created successfully!";
+    successEl.textContent = "Booking created successfully.";
     successEl.classList.remove("hidden");
 
     localStorage.removeItem("selectedService");
     localStorage.removeItem("selectedProvider");
 
+    setTimeout(() => {
+      window.location.href = "/dashboard/customer/";
+    }, 1000);
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Confirm Booking";
   }
 });
+
+loadBookingSummary();

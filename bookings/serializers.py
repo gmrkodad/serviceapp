@@ -4,7 +4,7 @@ from .models import Booking, Review
 class BookingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ["service", "provider", "scheduled_date", "address"]
+        fields = ["service", "provider", "scheduled_date", "time_slot", "address"]
 
     def create(self, validated_data):
         return Booking.objects.create(**validated_data)
@@ -34,6 +34,7 @@ class BookingListSerializer(serializers.ModelSerializer):
             "customer_username",
             "address",
             "scheduled_date",
+            "time_slot",
             "status",
             "created_at",
             "has_review",
@@ -107,6 +108,7 @@ class ProviderBookingSerializer(serializers.ModelSerializer):
             "customer_username",
             "address",
             "scheduled_date",
+            "time_slot",
             "status",
             "provider_rating",
             "created_at",

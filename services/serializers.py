@@ -41,10 +41,11 @@ class ProviderListSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(source="user.id", read_only=True)
     rating = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
+    city = serializers.CharField(read_only=True)
 
     class Meta:
         model = ProviderProfile
-        fields = ["id", "user_id", "username", "rating", "price"]
+        fields = ["id", "user_id", "username", "rating", "price", "city"]
 
     def get_rating(self, obj):
         return obj.user.average_rating()

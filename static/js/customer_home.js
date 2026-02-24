@@ -257,6 +257,12 @@ function renderCategories(query) {
 
   filtered.forEach((cat) => {
     const iconMarkup = getCategoryIconMarkup(cat.name);
+    const startsFrom = (cat.services || []).reduce((min, s) => {
+      const price = Number(s.starts_from ?? s.base_price ?? 0);
+      if (!price) return min;
+      if (min === null) return price;
+      return price < min ? price : min;
+    }, null);
 
     const card = document.createElement("div");
     card.className = `
@@ -269,6 +275,9 @@ function renderCategories(query) {
     card.innerHTML = `
         ${iconMarkup}
         <h3 class="text-lg font-semibold text-slate-900">${cat.name}</h3>
+        <p class="text-sm text-slate-500 mt-1">
+          ${startsFrom ? `Starts from Rs.${startsFrom}` : "Pricing on request"}
+        </p>
       `;
 
     card.onclick = () => {
