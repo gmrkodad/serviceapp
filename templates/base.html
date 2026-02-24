@@ -2,8 +2,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}ServiceApp{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { max-width: 100%; overflow-x: hidden; }
+  </style>
 </head>
 
 <body class="bg-gray-50">
@@ -11,15 +16,15 @@
 <!-- TOP NAV -->
 {% if show_nav %}
 <nav class="bg-white shadow-sm sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
 
     <!-- Logo -->
-    <a id="nav-home-link" href="/" class="text-2xl font-bold text-blue-600">
+    <a id="nav-home-link" href="/" class="text-xl sm:text-2xl font-bold text-blue-600">
       ServiceApp
     </a>
 
     <!-- Right actions -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-2 sm:space-x-4">
 
       <!-- Notifications -->
       <div class="relative">
@@ -33,7 +38,7 @@
 
         <div
           id="notif-dropdown"
-          class="hidden absolute right-0 mt-2 w-80 bg-white shadow rounded-lg z-50">
+          class="hidden absolute right-0 mt-2 w-[92vw] max-w-sm sm:w-80 bg-white shadow rounded-lg z-50">
 
           <div class="p-3 border-b font-semibold">
             Notifications
@@ -63,7 +68,7 @@
 
         <div
           id="profile-menu"
-          class="hidden absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+          class="hidden absolute right-0 mt-2 w-[92vw] max-w-xs sm:w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
           <div class="px-4 py-3 border-b bg-slate-50/70">
             <p id="profile-name" class="text-sm font-semibold text-slate-900 truncate">Account</p>
             <p id="profile-role" class="text-xs text-slate-500 truncate">Signed in</p>
@@ -94,7 +99,7 @@
 {% endif %}
 
 <!-- PAGE CONTENT -->
-<main class="max-w-7xl mx-auto px-6 py-6">
+<main class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
   <button
     id="back-btn"
     class="mb-6 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">

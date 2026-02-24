@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from django.http import JsonResponse
 from django.conf import settings
 from django.utils import timezone
 import json
@@ -520,25 +519,6 @@ class ProviderServicePriceMeAPIView(APIView):
             )
 
         return Response({"message": "Service prices updated"})
-
-
-class IpLocationAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        try:
-            req = Request(
-                "https://ipapi.co/json/",
-                headers={"User-Agent": "django-app"},
-            )
-            with urlopen(req, timeout=5) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            return JsonResponse({
-                "city": payload.get("city", ""),
-                "country": payload.get("country_name", ""),
-            })
-        except Exception:
-            return JsonResponse({"city": "", "country": ""})
 
 
 class CustomerCityAPIView(APIView):

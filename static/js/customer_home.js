@@ -70,20 +70,6 @@ const locationCity = document.getElementById("location-city");
 const locationApply = document.getElementById("location-apply");
 let allCategories = [];
 
-async function detectLocationByIp() {
-  try {
-    const res = await fetch("/api/accounts/ip-location/");
-    if (!res.ok) return;
-    const data = await res.json();
-    const city = data.city || "";
-    if (!localStorage.getItem("location_city") && city) {
-      localStorage.setItem("location_city", city);
-    }
-  } catch {
-    // ignore IP lookup errors
-  }
-}
-
 async function reverseGeocodeCity(lat, lon) {
   try {
     const res = await fetch(
@@ -114,6 +100,7 @@ async function detectLocationByBrowser() {
         const city = await reverseGeocodeCity(latitude, longitude);
         if (city) {
           localStorage.setItem("location_city", city);
+          localStorage.setItem("location_source", "browser");
           resolve(true);
           return;
         }
@@ -187,10 +174,7 @@ function getCategoryIconMarkup(name) {
   const ok = await ensureAccessTokenOrRedirect();
   if (!ok) return;
 
-  const gotBrowserLocation = await detectLocationByBrowser();
-  if (!gotBrowserLocation) {
-    await detectLocationByIp();
-  }
+  await detectLocationByBrowser();
 
   if (locationCity) {
     locationCity.value = localStorage.getItem("location_city") || "";
@@ -229,6 +213,7 @@ if (locationApply) {
   locationApply.addEventListener("click", async () => {
     const city = locationCity.value.trim();
     localStorage.setItem("location_city", city);
+    localStorage.setItem("location_source", "manual");
     await saveCustomerCity(city);
   });
 }
