@@ -118,17 +118,47 @@
   (function () {
     const btn = document.getElementById("back-btn");
     if (!btn) return;
-    const hideOn = ["/", "/login/", "/register/", "/register/customer/", "/register/provider/"];
+    const hideOn = [
+      "/",
+      "/login/",
+      "/register/",
+      "/register/customer/",
+      "/register/provider/",
+      "/dashboard/provider/",
+      "/admin-panel/",
+    ];
     if (hideOn.includes(window.location.pathname)) {
       btn.classList.add("hidden");
       return;
     }
     btn.addEventListener("click", () => {
-      if (window.history.length > 1) {
+      const homeLink = document.getElementById("nav-home-link");
+      const homeHref = homeLink?.getAttribute("href") || "/";
+      const homePath = new URL(homeHref, window.location.origin).pathname;
+
+      let refPath = "";
+      try {
+        if (document.referrer) {
+          const refUrl = new URL(document.referrer);
+          if (refUrl.origin === window.location.origin) {
+            refPath = refUrl.pathname;
+          }
+        }
+      } catch (_) {}
+
+      const shouldForceHome =
+        (homePath === "/dashboard/provider/" || homePath === "/admin-panel/") &&
+        refPath === "/";
+
+      if (shouldForceHome) {
+        window.location.href = homeHref;
+        return;
+      }
+
+      if (window.history.length > 1 && refPath) {
         window.history.back();
       } else {
-        const homeLink = document.getElementById("nav-home-link");
-        window.location.href = homeLink?.getAttribute("href") || "/";
+        window.location.href = homeHref;
       }
     });
   })();
