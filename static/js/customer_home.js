@@ -90,30 +90,45 @@ async function reverseGeocodeCity(lat, lon) {
   }
 }
 
-async function detectLocationByBrowser() {
-  if (!("geolocation" in navigator)) return false;
+async function getBestBrowserPosition() {
+  if (!("geolocation" in navigator)) return null;
 
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const city = await reverseGeocodeCity(latitude, longitude);
-        if (city) {
-          localStorage.setItem("location_city", city);
-          localStorage.setItem("location_source", "browser");
-          resolve(true);
-          return;
+  const tryOnce = () =>
+    new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve(position),
+        () => resolve(null),
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
         }
-        resolve(false);
-      },
-      () => resolve(false),
-      {
-        enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 300000,
-      }
-    );
-  });
+      );
+    });
+
+  let best = null;
+  for (let i = 0; i < 2; i += 1) {
+    const pos = await tryOnce();
+    if (!pos) continue;
+    if (!best || pos.coords.accuracy < best.coords.accuracy) {
+      best = pos;
+    }
+    if (best.coords.accuracy <= 120) break;
+  }
+  return best;
+}
+
+async function detectLocationByBrowser() {
+  const position = await getBestBrowserPosition();
+  if (!position) return false;
+
+  const { latitude, longitude } = position.coords;
+  const city = await reverseGeocodeCity(latitude, longitude);
+  if (!city) return false;
+
+  localStorage.setItem("location_city", city);
+  localStorage.setItem("location_source", "browser");
+  return true;
 }
 
 const categoryIcons = {

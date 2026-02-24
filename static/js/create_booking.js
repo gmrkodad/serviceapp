@@ -34,13 +34,42 @@ const today = new Date().toISOString().split("T")[0];
 dateInput.min = today;
 if (!dateInput.value) dateInput.value = today;
 
+async function getBestBrowserPosition() {
+  if (!navigator.geolocation) return null;
+
+  const tryOnce = () =>
+    new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve(position),
+        () => resolve(null),
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
+        }
+      );
+    });
+
+  let best = null;
+  for (let i = 0; i < 2; i += 1) {
+    const pos = await tryOnce();
+    if (!pos) continue;
+    if (!best || pos.coords.accuracy < best.coords.accuracy) {
+      best = pos;
+    }
+    if (best.coords.accuracy <= 120) break;
+  }
+
+  return best;
+}
+
 const savedCity = localStorage.getItem("location_city");
 if (savedCity && customerLocationInput) {
   customerLocationInput.value = savedCity;
 }
 
 if (useCurrentLocationBtn && customerLocationInput) {
-  useCurrentLocationBtn.addEventListener("click", () => {
+  useCurrentLocationBtn.addEventListener("click", async () => {
     if (!navigator.geolocation) {
       errorEl.textContent = "Geolocation is not supported in this browser.";
       errorEl.classList.remove("hidden");
@@ -51,22 +80,21 @@ if (useCurrentLocationBtn && customerLocationInput) {
     useCurrentLocationBtn.disabled = true;
     useCurrentLocationBtn.textContent = "Detecting...";
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude.toFixed(5);
-        const lng = pos.coords.longitude.toFixed(5);
-        customerLocationInput.value = `${lat}, ${lng}`;
-        useCurrentLocationBtn.disabled = false;
-        useCurrentLocationBtn.textContent = "Use Current Location";
-      },
-      () => {
-        useCurrentLocationBtn.disabled = false;
-        useCurrentLocationBtn.textContent = "Use Current Location";
-        errorEl.textContent = "Unable to fetch current location. Please allow location permission.";
-        errorEl.classList.remove("hidden");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    const pos = await getBestBrowserPosition();
+    if (!pos) {
+      useCurrentLocationBtn.disabled = false;
+      useCurrentLocationBtn.textContent = "Use Current Location";
+      errorEl.textContent = "Unable to fetch current location. Please allow location permission.";
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    const accuracy = Math.round(pos.coords.accuracy || 0);
+    customerLocationInput.value = `${lat}, ${lng} (±${accuracy}m)`;
+    useCurrentLocationBtn.disabled = false;
+    useCurrentLocationBtn.textContent = "Use Current Location";
   });
 }
 
