@@ -226,7 +226,7 @@ form.addEventListener("submit", async (e) => {
       );
     }
 
-    successEl.textContent = "Booking created successfully.";
+    successEl.textContent = `Booking created successfully. Booking ID: #${data.booking_id}`;
     successEl.classList.remove("hidden");
 
     localStorage.removeItem("selectedService");

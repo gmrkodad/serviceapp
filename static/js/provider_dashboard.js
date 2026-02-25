@@ -127,7 +127,7 @@ function renderBookingCard(b) {
   return `
     <div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm">
       <div class="flex items-center justify-between mb-2">
-        <p class="font-semibold text-slate-900">${b.service_name}</p>
+        <p class="font-semibold text-slate-900">#${b.id} • ${b.service_name}</p>
         ${statusPill(b.status)}
       </div>
       <p class="text-sm"><strong>Customer:</strong> ${b.customer_username}</p>
@@ -171,7 +171,7 @@ function renderOverviewSection() {
     row.className = "rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-start justify-between gap-3";
     row.innerHTML = `
       <div>
-        <p class="font-medium text-slate-900">${b.service_name}</p>
+        <p class="font-medium text-slate-900">#${b.id} • ${b.service_name}</p>
         <p class="text-sm text-slate-600">${b.customer_username} | ${b.scheduled_date} | ${formatTimeSlot(b.time_slot)}</p>
       </div>
       ${statusPill(b.status)}

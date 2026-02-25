@@ -102,6 +102,7 @@
     const filtered = bookingsCache.filter((b) => {
       const matchSearch =
         !q ||
+        String(b.id || "").toLowerCase().includes(q) ||
         (b.service_name || "").toLowerCase().includes(q) ||
         (b.customer_username || "").toLowerCase().includes(q) ||
         (b.provider_username || "").toLowerCase().includes(q);
@@ -139,6 +140,7 @@
           : `<button class="bg-slate-900 text-white px-3 py-1 rounded text-xs" data-assign-btn="${b.id}">Assign</button>`;
 
         tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-700">#${b.id}</td>
           <td class="py-3 px-4">${b.service_name}</td>
           <td class="py-3 px-4">${b.customer_username || "-"}</td>
           <td class="py-3 px-4">${providerCell}</td>

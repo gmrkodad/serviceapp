@@ -103,6 +103,7 @@ fetch("/api/bookings/my/", {
       card.innerHTML = `
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-semibold">
+            #${b.id} •
             ${b.category} - ${b.service_name}
           </h3>
           ${statusBadge(b.status)}
