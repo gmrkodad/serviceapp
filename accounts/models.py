@@ -123,6 +123,7 @@ class UserPhone(models.Model):
 class PhoneOTP(models.Model):
     class Purpose(models.TextChoices):
         LOGIN = "LOGIN", "Login"
+        SIGNUP = "SIGNUP", "Signup"
 
     phone = models.CharField(max_length=15, db_index=True)
     code = models.CharField(max_length=6)

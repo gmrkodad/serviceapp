@@ -42,10 +42,30 @@
     <input
       id="phone"
       type="text"
-      placeholder="WhatsApp Number"
+      placeholder="Mobile Number"
       class="w-full border p-2 mb-3 rounded"
       required
     />
+
+    <div class="flex gap-2 mb-3">
+      <input
+        id="otp"
+        type="text"
+        placeholder="Enter OTP"
+        class="w-full border p-2 rounded"
+        required
+      />
+      <button
+        id="send-otp-btn"
+        type="button"
+        class="px-3 py-2 bg-slate-900 text-white rounded text-sm"
+      >
+        Send OTP
+      </button>
+    </div>
+
+    <p id="otp-info" class="text-slate-600 text-sm mb-2 hidden"></p>
+    <p id="otp-error" class="text-red-600 text-sm mb-2 hidden"></p>
 
     <input
       id="city"

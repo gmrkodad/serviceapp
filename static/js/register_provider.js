@@ -2,16 +2,40 @@ const username = document.getElementById("username");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const phone = document.getElementById("phone");
+const otp = document.getElementById("otp");
 const city = document.getElementById("city");
 const serviceSelect = document.getElementById("services");
 const addServiceBtn = document.getElementById("add-service");
 const selectedServicesWrap = document.getElementById("selected-services");
 const servicesError = document.getElementById("services-error");
+const sendOtpBtn = document.getElementById("send-otp-btn");
+const otpInfoEl = document.getElementById("otp-info");
+const otpErrorEl = document.getElementById("otp-error");
 
 const errorEl = document.getElementById("error");
 const successEl = document.getElementById("success");
 
 const selectedServices = new Map();
+let resendTimer = null;
+let resendSecondsLeft = 0;
+
+function startResendTimer(seconds = 30) {
+  resendSecondsLeft = seconds;
+  sendOtpBtn.disabled = true;
+  sendOtpBtn.textContent = `Resend in ${resendSecondsLeft}s`;
+  if (resendTimer) clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    resendSecondsLeft -= 1;
+    if (resendSecondsLeft <= 0) {
+      clearInterval(resendTimer);
+      resendTimer = null;
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = "Send OTP";
+      return;
+    }
+    sendOtpBtn.textContent = `Resend in ${resendSecondsLeft}s`;
+  }, 1000);
+}
 
 async function reverseGeocodeCity(lat, lon) {
   try {
@@ -136,6 +160,44 @@ if (addServiceBtn) {
   });
 }
 
+if (sendOtpBtn) {
+  sendOtpBtn.addEventListener("click", async () => {
+    otpInfoEl.classList.add("hidden");
+    otpErrorEl.classList.add("hidden");
+
+    const phoneValue = phone.value.trim();
+    if (!phoneValue) {
+      otpErrorEl.textContent = "Enter mobile number";
+      otpErrorEl.classList.remove("hidden");
+      return;
+    }
+
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.textContent = "Sending...";
+    try {
+      const res = await fetch("/api/accounts/auth/otp/send-signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phoneValue }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || data.phone?.[0] || "Failed to send OTP");
+      }
+      otpInfoEl.textContent = data.dev_otp
+        ? `OTP sent (debug): ${data.dev_otp}`
+        : "OTP sent to your mobile number";
+      otpInfoEl.classList.remove("hidden");
+      startResendTimer(30);
+    } catch (err) {
+      otpErrorEl.textContent = err.message;
+      otpErrorEl.classList.remove("hidden");
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = "Send OTP";
+    }
+  });
+}
+
 /* -------------------------------
    SUBMIT PROVIDER REGISTRATION
 -------------------------------- */
@@ -173,6 +235,7 @@ document
           email: email.value,
           password: password.value,
           phone: phone.value,
+          otp: otp.value.trim(),
           city: cityValue,
           services: selectedServiceIds,
         }),
@@ -186,6 +249,7 @@ document
           data.username?.[0] ||
           data.email?.[0] ||
           data.phone?.[0] ||
+          data.otp?.[0] ||
           data.city?.[0] ||
           data.services?.[0] ||
           "Registration failed"

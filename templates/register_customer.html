@@ -24,8 +24,20 @@
     <input id="password" type="password" placeholder="Password"
       class="w-full border px-3 py-2 rounded" required>
 
-    <input id="phone" placeholder="WhatsApp Number"
+    <input id="phone" placeholder="Mobile Number"
       class="w-full border px-3 py-2 rounded" required>
+
+    <div class="flex gap-2">
+      <input id="otp" placeholder="Enter OTP"
+        class="flex-1 border px-3 py-2 rounded" required>
+      <button id="send-otp-btn" type="button"
+        class="px-3 bg-slate-900 text-white rounded text-sm">
+        Send OTP
+      </button>
+    </div>
+
+    <p id="otp-info" class="text-slate-600 text-center hidden"></p>
+    <p id="otp-error" class="text-red-500 text-center hidden"></p>
 
     <!-- ✅ MUST be submit -->
     <button type="submit"

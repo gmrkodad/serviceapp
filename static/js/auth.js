@@ -81,6 +81,26 @@ const otpCodeEl = document.getElementById("otp-code");
 const otpInfoEl = document.getElementById("otp-info");
 const otpErrorEl = document.getElementById("otp-error");
 const sendOtpBtn = document.getElementById("send-otp-btn");
+let resendTimer = null;
+let resendSecondsLeft = 0;
+
+function startResendTimer(seconds = 30) {
+  resendSecondsLeft = seconds;
+  sendOtpBtn.disabled = true;
+  sendOtpBtn.textContent = `Resend in ${resendSecondsLeft}s`;
+  if (resendTimer) clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    resendSecondsLeft -= 1;
+    if (resendSecondsLeft <= 0) {
+      clearInterval(resendTimer);
+      resendTimer = null;
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = "Send OTP";
+      return;
+    }
+    sendOtpBtn.textContent = `Resend in ${resendSecondsLeft}s`;
+  }, 1000);
+}
 
 if (sendOtpBtn) {
   sendOtpBtn.addEventListener("click", async () => {
@@ -111,10 +131,10 @@ if (sendOtpBtn) {
         ? `OTP sent (debug): ${data.dev_otp}`
         : "OTP sent to your mobile number";
       otpInfoEl.classList.remove("hidden");
+      startResendTimer(30);
     } catch (err) {
       otpErrorEl.textContent = err.message;
       otpErrorEl.classList.remove("hidden");
-    } finally {
       sendOtpBtn.disabled = false;
       sendOtpBtn.textContent = "Send OTP";
     }

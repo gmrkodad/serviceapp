@@ -12,6 +12,7 @@
   const filterRole = document.getElementById("filter-user-role");
   const filterActive = document.getElementById("filter-user-active");
   const filterCity = document.getElementById("filter-user-city");
+  const filterPhone = document.getElementById("filter-user-phone");
 
   async function refreshAccessToken() {
     const refresh = localStorage.getItem("refresh");
@@ -95,6 +96,7 @@
     const role = filterRole?.value || "";
     const active = filterActive?.value;
     const city = (filterCity?.value || "").toLowerCase();
+    const phone = (filterPhone?.value || "").toLowerCase();
 
     const filtered = usersCache.filter((u) => {
       const matchesSearch =
@@ -106,7 +108,9 @@
         active === "" ? true : String(u.is_active) === active;
       const matchesCity =
         !city || (u.city || "").toLowerCase().includes(city);
-      return matchesSearch && matchesRole && matchesActive && matchesCity;
+      const matchesPhone =
+        !phone || (u.phone || "").toLowerCase().includes(phone);
+      return matchesSearch && matchesRole && matchesActive && matchesCity && matchesPhone;
     });
 
     list.innerHTML = "";
@@ -168,6 +172,7 @@
         tr.innerHTML = `
           <td class="py-3 px-4 truncate">${u.username}</td>
           <td class="py-3 px-4 truncate">${u.email || "-"}</td>
+          <td class="py-3 px-4 truncate">${u.phone || "-"}</td>
           <td class="py-3 px-4">${u.role}</td>
           <td class="py-3 px-4 truncate">${u.city || "-"}</td>
           <td class="py-3 px-4 align-top">${servicesCell}</td>
@@ -353,7 +358,7 @@
 
   loadUsers();
 
-  [filterSearch, filterRole, filterActive, filterCity].forEach((el) => {
+  [filterSearch, filterRole, filterActive, filterCity, filterPhone].forEach((el) => {
     if (el) {
       el.addEventListener("input", renderUsers);
       el.addEventListener("change", renderUsers);

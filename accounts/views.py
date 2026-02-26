@@ -21,11 +21,45 @@ from services.models import Service
 from accounts.permissions import IsAdmin, IsProvider
 
 
+def _consume_signup_otp(phone, otp_code):
+    if not otp_code:
+        return False, "otp is required"
+
+    max_attempts = int(getattr(settings, "OTP_MAX_ATTEMPTS", 5))
+    otp = PhoneOTP.objects.filter(
+        phone=phone,
+        purpose=PhoneOTP.Purpose.SIGNUP,
+        is_used=False,
+        expires_at__gt=timezone.now(),
+    ).order_by("-created_at").first()
+
+    if not otp:
+        return False, "OTP expired or not found"
+
+    if otp.attempts >= max_attempts:
+        return False, "Maximum attempts reached. Request a new OTP"
+
+    if otp.code != str(otp_code).strip():
+        otp.attempts += 1
+        otp.save(update_fields=["attempts"])
+        return False, "Invalid OTP"
+
+    otp.is_used = True
+    otp.save(update_fields=["is_used"])
+    return True, None
+
+
 class CustomerSignupAPIView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = CustomerSignupSerializer(data=request.data)
         if serializer.is_valid():
+            ok, err = _consume_signup_otp(
+                serializer.validated_data["phone"],
+                request.data.get("otp"),
+            )
+            if not ok:
+                return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(
                 {"message": "Customer registered successfully"},
@@ -40,6 +74,12 @@ class ProviderSignupAPIView(APIView):
     def post(self, request):
         serializer = ProviderSignupSerializer(data=request.data)
         if serializer.is_valid():
+            ok, err = _consume_signup_otp(
+                serializer.validated_data["phone"],
+                request.data.get("otp"),
+            )
+            if not ok:
+                return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
             user = serializer.save()
             profile, _ = ProviderProfile.objects.get_or_create(user=user)
             _sync_provider_service_prices(profile)
@@ -126,7 +166,7 @@ class SendLoginOTPAPIView(APIView):
         if not UserPhone.objects.filter(phone=phone, user__is_active=True).exists():
             return Response({"error": "No active account found for this mobile number"}, status=404)
 
-        cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 60))
+        cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 30))
         latest = PhoneOTP.objects.filter(
             phone=phone,
             purpose=PhoneOTP.Purpose.LOGIN,
@@ -143,6 +183,51 @@ class SendLoginOTPAPIView(APIView):
             phone=phone,
             code=otp,
             purpose=PhoneOTP.Purpose.LOGIN,
+            expires_at=timezone.now() + timedelta(seconds=expiry_seconds),
+        )
+
+        sent, reason = _send_sms_otp(phone, otp)
+        if not sent:
+            if settings.DEBUG:
+                return Response({
+                    "message": "OTP generated (debug mode fallback)",
+                    "dev_otp": otp,
+                })
+            return Response({"error": reason or "Failed to send OTP"}, status=502)
+
+        return Response({"message": "OTP sent successfully via SMS"})
+
+
+class SendSignupOTPAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        raw_phone = request.data.get("phone", "")
+        try:
+            phone = validate_indian_phone(raw_phone)
+        except Exception as exc:
+            return Response({"phone": [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
+
+        if UserPhone.objects.filter(phone=phone, user__is_active=True).exists():
+            return Response({"error": "This mobile number is already registered"}, status=400)
+
+        cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 30))
+        latest = PhoneOTP.objects.filter(
+            phone=phone,
+            purpose=PhoneOTP.Purpose.SIGNUP,
+            is_used=False,
+            expires_at__gt=timezone.now(),
+        ).order_by("-created_at").first()
+        if latest and (timezone.now() - latest.created_at).total_seconds() < cooldown_seconds:
+            wait = cooldown_seconds - int((timezone.now() - latest.created_at).total_seconds())
+            return Response({"error": f"Please wait {max(wait, 1)} seconds before requesting a new OTP"}, status=429)
+
+        otp = f"{random.randint(100000, 999999)}"
+        expiry_seconds = int(getattr(settings, "OTP_EXPIRY_SECONDS", 300))
+        PhoneOTP.objects.create(
+            phone=phone,
+            code=otp,
+            purpose=PhoneOTP.Purpose.SIGNUP,
             expires_at=timezone.now() + timedelta(seconds=expiry_seconds),
         )
 
