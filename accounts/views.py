@@ -123,7 +123,17 @@ def _send_sms_otp(phone, otp):
         with urlopen(req, timeout=8) as resp:
             response_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
 
-        if response_data.get("return") is True or str(response_data.get("status", "")).lower() in {"success", "ok"}:
+        return_value = response_data.get("return")
+        status_value = str(response_data.get("status", "")).strip().lower()
+        message_value = str(response_data.get("message", "")).strip().lower()
+
+        success = (
+            return_value is True
+            or str(return_value).strip().lower() in {"true", "1", "yes"}
+            or status_value in {"success", "ok", "sent", "200", "1", "true"}
+            or ("success" in message_value or "sent" in message_value)
+        )
+        if success:
             return True, None
         return False, response_data.get("message") or "OTP provider rejected request"
     except HTTPError as exc:
