@@ -245,23 +245,23 @@ function renderProviders() {
   providersList.innerHTML = "";
   providers.forEach((p) => {
     const card = document.createElement("div");
-    card.className = "bg-white rounded-xl shadow hover:shadow-lg transition p-6";
+    card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition p-5";
     card.innerHTML = `
       <div class="flex items-center space-x-4">
-        <div class="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-xl">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xl border border-slate-200">
           &#128100;
         </div>
         <div>
-          <h3 class="font-semibold text-lg">${p.username}</h3>
-          <p class="text-sm text-gray-600">&#11088; ${p.rating || "New"} rating</p>
-          <p class="text-sm text-gray-600">Mobile: ${p.phone || "-"}</p>
-          <p class="text-sm text-emerald-700 font-medium mt-1">
+          <h3 class="font-semibold text-lg text-slate-900">${p.username}</h3>
+          <p class="text-sm text-slate-600">&#11088; ${p.rating || "New"} rating</p>
+          <p class="text-sm text-slate-600">Mobile: ${p.phone || "-"}</p>
+          <p class="text-sm text-emerald-700 font-semibold mt-1">
             Price: &#8377;${p.price ?? "N/A"}
           </p>
         </div>
       </div>
       <button
-        class="mt-5 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+        class="mt-5 w-full bg-slate-900 text-white py-2.5 rounded-xl hover:bg-slate-800 transition"
         onclick="bookService(${p.user_id})"
       >
         Book Service
