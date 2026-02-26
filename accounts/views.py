@@ -51,62 +51,56 @@ class ProviderSignupAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def _send_whatsapp_otp(phone, otp):
-    token = (getattr(settings, "WHATSAPP_API_TOKEN", "") or "").strip()
-    phone_number_id = (getattr(settings, "WHATSAPP_PHONE_NUMBER_ID", "") or "").strip()
-    template_name = (getattr(settings, "WHATSAPP_TEMPLATE_NAME", "") or "").strip()
-    template_lang = (getattr(settings, "WHATSAPP_TEMPLATE_LANG", "en") or "en").strip()
+def _send_sms_otp(phone, otp):
+    api_key = (getattr(settings, "OTP_DEV_API_KEY", "") or "").strip()
+    sender = (getattr(settings, "OTP_DEV_SENDER", "") or "").strip()
+    template = (getattr(settings, "OTP_DEV_TEMPLATE_ID", "") or "").strip()
 
-    if not token or not phone_number_id or not template_name:
-        return False, "WhatsApp API config is incomplete"
+    if not api_key:
+        return False, "OTP_DEV_API_KEY is not configured"
+    if not sender or not template:
+        return False, "OTP_DEV_SENDER or OTP_DEV_TEMPLATE_ID is not configured"
 
-    # Stored number is Indian 10-digit, WhatsApp API expects country code format.
-    to_number = f"91{phone}" if len(phone) == 10 else phone
-    body = {
-        "messaging_product": "whatsapp",
-        "to": to_number,
-        "type": "template",
-        "template": {
-            "name": template_name,
-            "language": {"code": template_lang},
-            "components": [
-                {
-                    "type": "body",
-                    "parameters": [
-                        {"type": "text", "text": otp},
-                    ],
-                }
-            ],
-        },
+    payload = {
+        "data": {
+            "channel": "sms",
+            "sender": sender,
+            "phone": f"91{phone}",
+            "template": template,
+            # Keep app-side OTP verification logic by sending our own generated code.
+            "code": otp,
+        }
     }
+    body = json.dumps(payload).encode("utf-8")
+
     try:
-        payload = json.dumps(body).encode("utf-8")
         req = Request(
-            f"https://graph.facebook.com/v20.0/{phone_number_id}/messages",
-            data=payload,
+            "https://api.otp.dev/v1/verifications",
+            data=body,
             method="POST",
             headers={
-                "Authorization": f"Bearer {token}",
+                "X-OTP-Key": api_key,
+                "accept": "application/json",
                 "Content-Type": "application/json",
             },
         )
         with urlopen(req, timeout=8) as resp:
-            response_data = json.loads(resp.read().decode("utf-8"))
-        if response_data.get("messages"):
+            response_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
+
+        if response_data.get("data"):
             return True, None
-        return False, "WhatsApp message was not accepted by provider"
+        return False, response_data.get("message") or "OTP provider rejected request"
     except HTTPError as exc:
         try:
             payload = json.loads(exc.read().decode("utf-8"))
-            meta_error = payload.get("error", {})
-            message = meta_error.get("message", f"HTTP {exc.code}")
-            return False, f"WhatsApp API error: {message}"
+            message = payload.get("message") or payload.get("error") or f"HTTP {exc.code}"
+            return False, f"OTP provider error: {message}"
         except Exception:
-            return False, f"WhatsApp API HTTP error: {exc.code}"
+            return False, f"OTP provider HTTP error: {exc.code}"
     except URLError as exc:
-        return False, f"WhatsApp network error: {exc.reason}"
+        return False, f"OTP network error: {exc.reason}"
     except Exception as exc:
-        return False, f"WhatsApp request failed: {str(exc)}"
+        return False, f"OTP request failed: {str(exc)}"
 
 
 class SendLoginOTPAPIView(APIView):
@@ -120,7 +114,7 @@ class SendLoginOTPAPIView(APIView):
             return Response({"phone": [str(exc)]}, status=status.HTTP_400_BAD_REQUEST)
 
         if not UserPhone.objects.filter(phone=phone, user__is_active=True).exists():
-            return Response({"error": "No active account found for this WhatsApp number"}, status=404)
+            return Response({"error": "No active account found for this mobile number"}, status=404)
 
         cooldown_seconds = int(getattr(settings, "OTP_RESEND_COOLDOWN_SECONDS", 60))
         latest = PhoneOTP.objects.filter(
@@ -142,7 +136,7 @@ class SendLoginOTPAPIView(APIView):
             expires_at=timezone.now() + timedelta(seconds=expiry_seconds),
         )
 
-        sent, reason = _send_whatsapp_otp(phone, otp)
+        sent, reason = _send_sms_otp(phone, otp)
         if not sent:
             if settings.DEBUG:
                 return Response({
@@ -151,7 +145,7 @@ class SendLoginOTPAPIView(APIView):
                 })
             return Response({"error": reason or "Failed to send OTP"}, status=502)
 
-        return Response({"message": "OTP sent successfully on WhatsApp"})
+        return Response({"message": "OTP sent successfully via SMS"})
 
 
 class VerifyLoginOTPAPIView(APIView):
@@ -187,7 +181,7 @@ class VerifyLoginOTPAPIView(APIView):
 
         phone_record = UserPhone.objects.filter(phone=phone, user__is_active=True).select_related("user").first()
         if not phone_record:
-            return Response({"error": "No active account found for this WhatsApp number"}, status=404)
+            return Response({"error": "No active account found for this mobile number"}, status=404)
 
         user = phone_record.user
         refresh = RefreshToken.for_user(user)
