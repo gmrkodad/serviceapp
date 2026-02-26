@@ -102,6 +102,7 @@
       const matchesSearch =
         !q ||
         (u.username || "").toLowerCase().includes(q) ||
+        (u.full_name || "").toLowerCase().includes(q) ||
         (u.email || "").toLowerCase().includes(q);
       const matchesRole = !role || u.role === role;
       const matchesActive =
@@ -171,6 +172,7 @@
 
         tr.innerHTML = `
           <td class="py-3 px-4 truncate">${u.username}</td>
+          <td class="py-3 px-4 truncate">${u.full_name || "-"}</td>
           <td class="py-3 px-4 truncate">${u.email || "-"}</td>
           <td class="py-3 px-4 truncate">${u.phone || "-"}</td>
           <td class="py-3 px-4">${u.role}</td>

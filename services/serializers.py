@@ -38,6 +38,7 @@ from accounts.models import ProviderProfile, ProviderServicePrice
 
 class ProviderListSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username")
+    full_name = serializers.SerializerMethodField()
     user_id = serializers.IntegerField(source="user.id", read_only=True)
     rating = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
@@ -46,7 +47,10 @@ class ProviderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProviderProfile
-        fields = ["id", "user_id", "username", "rating", "price", "city", "phone"]
+        fields = ["id", "user_id", "username", "full_name", "rating", "price", "city", "phone"]
+
+    def get_full_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()
 
     def get_rating(self, obj):
         return obj.user.average_rating()

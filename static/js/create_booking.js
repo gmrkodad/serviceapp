@@ -164,7 +164,7 @@ async function loadBookingSummary() {
       return;
     }
 
-    selectedProviderNameEl.textContent = provider.username || `Provider #${providerId}`;
+    selectedProviderNameEl.textContent = provider.full_name || provider.username || `Provider #${providerId}`;
     selectedProviderRatingEl.textContent = provider.rating ? `${provider.rating} / 5` : "New";
     selectedProviderPriceEl.textContent =
       provider.price !== null && provider.price !== undefined ? `Rs.${provider.price}` : "N/A";

@@ -143,12 +143,14 @@ class UserAdminSerializer(serializers.ModelSerializer):
     provider_services = serializers.SerializerMethodField()
     city = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             "id",
             "username",
+            "full_name",
             "email",
             "role",
             "is_active",
@@ -178,3 +180,6 @@ class UserAdminSerializer(serializers.ModelSerializer):
     def get_phone(self, obj):
         record = getattr(obj, "phone_record", None)
         return getattr(record, "phone", "") if record else ""
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()

@@ -112,7 +112,7 @@ fetch("/api/bookings/my/", {
         <p><strong>Address:</strong> ${b.address}</p>
         <p><strong>Date:</strong> ${b.scheduled_date}</p>
         <p><strong>Time Slot:</strong> ${(b.time_slot || "").replace("_", " ")}</p>
-        <p><strong>Provider:</strong> ${b.provider_username || "Assigned"}</p>
+        <p><strong>Provider:</strong> ${b.provider_full_name || b.provider_username || "Assigned"}</p>
         ${reviewMarkup}
         ${reviewForm}
       `;

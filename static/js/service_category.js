@@ -244,6 +244,7 @@ function renderProviders() {
 
   providersList.innerHTML = "";
   providers.forEach((p) => {
+    const providerName = p.full_name || p.username || "Provider";
     const card = document.createElement("div");
     card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition p-5";
     card.innerHTML = `
@@ -252,7 +253,7 @@ function renderProviders() {
           &#128100;
         </div>
         <div>
-          <h3 class="font-semibold text-lg text-slate-900">${p.username}</h3>
+          <h3 class="font-semibold text-lg text-slate-900">${providerName}</h3>
           <p class="text-sm text-slate-600">&#11088; ${p.rating || "New"} rating</p>
           <p class="text-sm text-slate-600">Mobile: ${p.phone || "-"}</p>
           <p class="text-sm text-emerald-700 font-semibold mt-1">

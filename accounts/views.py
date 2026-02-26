@@ -319,6 +319,34 @@ class ProfileAPIView(APIView):
         })
 
 
+class UpdateProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        full_name = (request.data.get("full_name") or "").strip()
+        email = (request.data.get("email") or "").strip()
+
+        if not full_name:
+            return Response({"error": "full_name is required"}, status=400)
+        if not email:
+            return Response({"error": "email is required"}, status=400)
+
+        if User.objects.filter(email__iexact=email).exclude(id=request.user.id).exists():
+            return Response({"error": "Email is already used by another account"}, status=400)
+
+        name_parts = full_name.split()
+        request.user.first_name = name_parts[0] if name_parts else ""
+        request.user.last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+        request.user.email = email
+        request.user.save(update_fields=["first_name", "last_name", "email"])
+
+        return Response({
+            "message": "Profile updated",
+            "full_name": f"{request.user.first_name} {request.user.last_name}".strip(),
+            "email": request.user.email or "",
+        })
+
+
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

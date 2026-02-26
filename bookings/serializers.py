@@ -17,6 +17,7 @@ class BookingListSerializer(serializers.ModelSerializer):
     provider_username = serializers.CharField(
         source="provider.username", read_only=True
     )
+    provider_full_name = serializers.SerializerMethodField()
     customer_username = serializers.CharField(
         source="customer.username", read_only=True
     )
@@ -31,6 +32,7 @@ class BookingListSerializer(serializers.ModelSerializer):
             "service_name",
             "category",
             "provider_username",
+            "provider_full_name",
             "customer_username",
             "address",
             "scheduled_date",
@@ -54,6 +56,11 @@ class BookingListSerializer(serializers.ModelSerializer):
         if not hasattr(obj, "review"):
             return ""
         return obj.review.comment
+
+    def get_provider_full_name(self, obj):
+        if not obj.provider:
+            return ""
+        return f"{obj.provider.first_name} {obj.provider.last_name}".strip()
 
 
 class AssignProviderSerializer(serializers.Serializer):
