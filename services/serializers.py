@@ -42,10 +42,11 @@ class ProviderListSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     city = serializers.CharField(read_only=True)
+    phone = serializers.SerializerMethodField()
 
     class Meta:
         model = ProviderProfile
-        fields = ["id", "user_id", "username", "rating", "price", "city"]
+        fields = ["id", "user_id", "username", "rating", "price", "city", "phone"]
 
     def get_rating(self, obj):
         return obj.user.average_rating()
@@ -59,6 +60,10 @@ class ProviderListSerializer(serializers.ModelSerializer):
             service_id=service_id,
         ).values_list("price", flat=True).first()
         return float(p) if p is not None else None
+
+    def get_phone(self, obj):
+        phone_record = getattr(obj.user, "phone_record", None)
+        return getattr(phone_record, "phone", "")
 
 
 class ServiceCategoryAdminSerializer(serializers.ModelSerializer):

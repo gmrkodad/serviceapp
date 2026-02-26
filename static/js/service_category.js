@@ -254,6 +254,7 @@ function renderProviders() {
         <div>
           <h3 class="font-semibold text-lg">${p.username}</h3>
           <p class="text-sm text-gray-600">&#11088; ${p.rating || "New"} rating</p>
+          <p class="text-sm text-gray-600">Mobile: ${p.phone || "-"}</p>
           <p class="text-sm text-emerald-700 font-medium mt-1">
             Price: &#8377;${p.price ?? "N/A"}
           </p>
