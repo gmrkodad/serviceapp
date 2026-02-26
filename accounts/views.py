@@ -52,43 +52,38 @@ class ProviderSignupAPIView(APIView):
 
 
 def _send_sms_otp(phone, otp):
-    api_key = (getattr(settings, "OTP_DEV_API_KEY", "") or "").strip()
-    sender = (getattr(settings, "OTP_DEV_SENDER", "") or "").strip()
-    template = (getattr(settings, "OTP_DEV_TEMPLATE_ID", "") or "").strip()
+    api_key = (getattr(settings, "NINZA_SMS_AUTH_KEY", "") or "").strip()
+    sender_id = (getattr(settings, "NINZA_SMS_SENDER_ID", "") or "").strip()
+    route = (getattr(settings, "NINZA_SMS_ROUTE", "") or "").strip()
 
     if not api_key:
-        return False, "OTP_DEV_API_KEY is not configured"
-    if not sender or not template:
-        return False, "OTP_DEV_SENDER or OTP_DEV_TEMPLATE_ID is not configured"
+        return False, "NINZA_SMS_AUTH_KEY is not configured"
+    if not sender_id:
+        return False, "NINZA_SMS_SENDER_ID is not configured"
 
     payload = {
-        "data": {
-            "channel": "sms",
-            "sender": sender,
-            "phone": f"91{phone}",
-            "template": template,
-            # Keep app-side OTP verification logic by sending our generated code.
-            "code": otp,
-        }
+        "sender_id": sender_id,
+        "variables_values": otp,
+        "numbers": phone,
     }
+    if route:
+        payload["rout"] = route
     body = json.dumps(payload).encode("utf-8")
 
     try:
         req = Request(
-            "https://api.otp.dev/v1/verifications",
+            "https://ninzasms.in.net/auth/send_sms",
             data=body,
             method="POST",
             headers={
-                "X-OTP-Key": api_key,
-                "accept": "application/json",
+                "authorization": api_key,
                 "Content-Type": "application/json",
             },
         )
         with urlopen(req, timeout=8) as resp:
             response_data = json.loads(resp.read().decode("utf-8", errors="ignore"))
 
-        # Per otp.dev docs, success response contains top-level message/account fields.
-        if response_data.get("message_id") or response_data.get("account_id"):
+        if response_data.get("return") is True or str(response_data.get("status", "")).lower() in {"success", "ok"}:
             return True, None
         return False, response_data.get("message") or "OTP provider rejected request"
     except HTTPError as exc:
