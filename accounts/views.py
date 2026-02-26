@@ -92,9 +92,10 @@ def _send_sms_otp(phone, otp):
         return False, response_data.get("message") or "OTP provider rejected request"
     except HTTPError as exc:
         try:
-            payload = json.loads(exc.read().decode("utf-8"))
-            message = payload.get("message") or payload.get("error") or f"HTTP {exc.code}"
-            return False, f"OTP provider error: {message}"
+            raw = exc.read().decode("utf-8", errors="ignore")
+            payload = json.loads(raw) if raw else {}
+            message = payload.get("message") or payload.get("error") or raw or f"HTTP {exc.code}"
+            return False, f"OTP provider HTTP {exc.code}: {message}"
         except Exception:
             return False, f"OTP provider HTTP error: {exc.code}"
     except URLError as exc:
