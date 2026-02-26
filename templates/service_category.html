@@ -2,7 +2,11 @@
 {% load static %}
 
 {% block content %}
-<div class="relative overflow-hidden rounded-3xl border border-blue-200/70 bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 text-white px-6 py-7 md:px-8 md:py-9 mb-8 shadow-lg">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  .svc-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
+</style>
+<div class="svc-font relative overflow-hidden rounded-3xl border border-slate-300 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-600 text-white px-6 py-7 md:px-8 md:py-9 mb-8 shadow-lg">
   <div class="absolute -top-16 -right-16 h-52 w-52 rounded-full bg-white/15 blur-2xl"></div>
   <div class="absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-cyan-200/20 blur-2xl"></div>
   <div class="relative flex items-center gap-4">
@@ -23,7 +27,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+<div class="svc-font grid grid-cols-1 xl:grid-cols-12 gap-6">
   <section class="xl:col-span-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
       <div class="flex items-center justify-between mb-3">

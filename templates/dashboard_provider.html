@@ -3,12 +3,12 @@
 
 {% block content %}
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-  .provider-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  .provider-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
   .provider-bg {
     background:
-      radial-gradient(950px 330px at 8% -12%, #dbeafe 0%, transparent 58%),
-      radial-gradient(950px 330px at 92% -12%, #dcfce7 0%, transparent 58%),
+      radial-gradient(950px 330px at 8% -12%, #e5e7eb 0%, transparent 58%),
+      radial-gradient(950px 330px at 92% -12%, #f3f4f6 0%, transparent 58%),
       linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
   }
   .tab-btn.active {
@@ -22,10 +22,10 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
     <div>
       <p class="text-sm uppercase tracking-widest text-slate-500">Provider Panel</p>
-      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Work Center</h2>
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">Work Center</h2>
       <p class="text-slate-600 mt-2">Manage your jobs, status updates, and services in one place.</p>
     </div>
-    <div class="h-2 w-40 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+    <div class="h-2 w-40 rounded-full bg-gradient-to-r from-slate-900 to-slate-500"></div>
   </div>
 
   <div class="flex flex-wrap gap-3 mb-8">
@@ -111,7 +111,7 @@
       <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm h-fit">
         <h4 class="font-semibold text-slate-900 mb-2">Price Updates</h4>
         <p class="text-sm text-slate-600 mb-3">Use this button after changing one or more prices.</p>
-        <button id="provider-prices-save" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg">
+        <button id="provider-prices-save" class="w-full bg-slate-900 text-white px-4 py-2 rounded-lg">
           Update Prices
         </button>
         <p id="provider-prices-msg" class="text-sm text-slate-600 mt-2"></p>

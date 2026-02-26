@@ -2,64 +2,59 @@
 {% load static %}
 
 {% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  .uc-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
+</style>
 
-<!-- HERO SECTION -->
-<section class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white mb-10">
-  <div class="flex flex-col md:flex-row justify-between items-center">
+<section class="uc-font bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-sm border border-slate-800">
+  <div class="flex flex-col md:flex-row justify-between items-center gap-6">
     <div>
-      <h1 class="text-3xl md:text-4xl font-bold mb-3">
+      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">
         Home services, at your doorstep
       </h1>
-      <p class="text-lg opacity-90">
+      <p class="text-base md:text-lg text-slate-200">
         Book trusted professionals for all your needs
       </p>
     </div>
 
     <a
       href="/dashboard/customer/"
-      class="mt-6 md:mt-0 bg-white text-blue-600 font-semibold px-6 py-3 rounded-xl shadow hover:bg-gray-100 transition">
-      Go to Dashboard →
+      class="bg-white text-slate-900 font-semibold px-6 py-3 rounded-2xl hover:bg-slate-100 transition">
+      Go to Dashboard
     </a>
   </div>
 </section>
 
-<!-- LOCATION BAR -->
-<section class="mb-8">
-  <div class="bg-white rounded-2xl shadow p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+<section class="uc-font mb-8">
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
     <div>
       <p class="text-sm text-slate-500">Choose your location</p>
       <p class="text-lg font-semibold text-slate-900">Find services near you</p>
     </div>
     <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-      <input id="location-city" class="w-full sm:w-56 border rounded-xl px-3 py-2" placeholder="City" />
-      <button id="location-apply" class="px-4 py-2 rounded-xl bg-slate-900 text-white">Apply</button>
+      <input id="location-city" class="w-full sm:w-56 border border-slate-300 rounded-xl px-3 py-2.5" placeholder="City" />
+      <button id="location-apply" class="px-4 py-2.5 rounded-xl bg-slate-900 text-white">Apply</button>
     </div>
   </div>
 </section>
 
-<!-- SERVICES SECTION -->
-<section>
+<section class="uc-font">
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-    <h2 class="text-2xl font-semibold">
-      Popular Services
-    </h2>
+    <h2 class="text-2xl font-semibold tracking-tight">Popular Services</h2>
     <div class="w-full md:w-80">
       <input
         id="service-search"
         type="text"
         placeholder="Search services..."
-        class="w-full border rounded-xl px-4 py-2"
+        class="w-full border border-slate-300 rounded-xl px-4 py-2.5"
       />
     </div>
   </div>
 
-  <div
-    id="categories"
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  </div>
+  <div id="categories" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
   <p id="no-results" class="text-slate-500 mt-4 hidden">No matching services found.</p>
 </section>
 
 <script src="{% static 'js/customer_home.js' %}"></script>
-
 {% endblock %}
