@@ -64,15 +64,15 @@
     } else if (user.role === "PROVIDER") {
       homeLinkEl.href = "/dashboard/provider/";
       if (accountLinkEl) {
-        accountLinkEl.href = "/dashboard/provider/";
-        accountLinkEl.textContent = "Provider Dashboard";
+        accountLinkEl.href = "/account/profile/";
+        accountLinkEl.textContent = "My Profile";
       }
       if (profileRoleEl) profileRoleEl.textContent = "Provider account";
     } else {
       homeLinkEl.href = "/";
       if (accountLinkEl) {
-        accountLinkEl.href = "/dashboard/customer/";
-        accountLinkEl.textContent = "Customer Dashboard";
+        accountLinkEl.href = "/account/profile/";
+        accountLinkEl.textContent = "My Profile";
       }
       if (profileRoleEl) profileRoleEl.textContent = "Customer account";
     }

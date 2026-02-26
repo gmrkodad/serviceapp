@@ -5,10 +5,12 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from accounts.jwt import CaseInsensitiveTokenObtainPairSerializer
 
 # ✅ Public token view
 class PublicTokenObtainPairView(TokenObtainPairView):
     permission_classes = [AllowAny]
+    serializer_class = CaseInsensitiveTokenObtainPairSerializer
 
 
 urlpatterns = [

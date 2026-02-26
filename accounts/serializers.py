@@ -24,10 +24,19 @@ def validate_indian_phone(phone: str) -> str:
 class CustomerSignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     phone = serializers.CharField(write_only=True)
+    full_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "phone"]
+        fields = ["username", "email", "password", "phone", "full_name"]
+
+    def validate_username(self, value):
+        username = (value or "").strip()
+        if not username:
+            raise serializers.ValidationError("Username is required")
+        if User.objects.filter(username__iexact=username).exists():
+            raise serializers.ValidationError("This username is already taken")
+        return username.lower()
 
     def validate_phone(self, value):
         phone = validate_indian_phone(value)
@@ -37,11 +46,17 @@ class CustomerSignupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         phone = validated_data.pop("phone")
+        full_name = (validated_data.pop("full_name", "") or "").strip()
+        name_parts = full_name.split()
+        first_name = name_parts[0] if name_parts else ""
+        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data.get("email"),
             password=validated_data["password"],
             role=User.Role.CUSTOMER,
+            first_name=first_name,
+            last_name=last_name,
         )
         from .models import CustomerProfile
 
@@ -58,11 +73,20 @@ class ProviderSignupSerializer(serializers.ModelSerializer):
     )
     city = serializers.CharField(write_only=True, required=True, allow_blank=False)
     phone = serializers.CharField(write_only=True)
+    full_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "services", "city", "phone"]
+        fields = ["username", "email", "password", "services", "city", "phone", "full_name"]
         extra_kwargs = {"password": {"write_only": True}}
+
+    def validate_username(self, value):
+        username = (value or "").strip()
+        if not username:
+            raise serializers.ValidationError("Username is required")
+        if User.objects.filter(username__iexact=username).exists():
+            raise serializers.ValidationError("This username is already taken")
+        return username.lower()
 
     def validate_phone(self, value):
         phone = validate_indian_phone(value)
@@ -74,10 +98,16 @@ class ProviderSignupSerializer(serializers.ModelSerializer):
         city = validated_data.pop("city", "")
         services = validated_data.pop("services")
         phone = validated_data.pop("phone")
+        full_name = (validated_data.pop("full_name", "") or "").strip()
+        name_parts = full_name.split()
+        first_name = name_parts[0] if name_parts else ""
+        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
 
         user = User.objects.create_user(
             **validated_data,
             role=User.Role.PROVIDER,
+            first_name=first_name,
+            last_name=last_name,
         )
 
         profile, _ = ProviderProfile.objects.get_or_create(user=user)

@@ -58,6 +58,12 @@ def change_password_page(request):
     })
 
 
+def profile_page(request):
+    return render(request, "profile.html", {
+        "show_nav": True
+    })
+
+
 # =====================
 # DASHBOARDS (WITH NAV)
 # =====================

@@ -298,9 +298,14 @@ class ProfileAPIView(APIView):
             if request.user.is_staff or request.user.is_superuser
             else request.user.role
         )
+        phone_record = UserPhone.objects.filter(user=request.user).first()
+        full_name = (f"{request.user.first_name} {request.user.last_name}").strip()
         return Response({
             "username": request.user.username,
-            "role": effective_role
+            "role": effective_role,
+            "email": request.user.email or "",
+            "phone": phone_record.phone if phone_record else "",
+            "full_name": full_name,
         })
 
 
@@ -628,7 +633,7 @@ class CustomerCityAPIView(APIView):
 
 
 class ReverseGeocodeAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         lat = request.query_params.get("lat")

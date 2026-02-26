@@ -1,4 +1,5 @@
 const username = document.getElementById("username");
+const fullName = document.getElementById("full_name");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const phone = document.getElementById("phone");
@@ -11,6 +12,8 @@ const servicesError = document.getElementById("services-error");
 const sendOtpBtn = document.getElementById("send-otp-btn");
 const otpInfoEl = document.getElementById("otp-info");
 const otpErrorEl = document.getElementById("otp-error");
+const useCurrentCityBtn = document.getElementById("use-current-city");
+const cityInfoEl = document.getElementById("city-info");
 
 const errorEl = document.getElementById("error");
 const successEl = document.getElementById("success");
@@ -39,37 +42,79 @@ function startResendTimer(seconds = 30) {
 
 async function reverseGeocodeCity(lat, lon) {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1`
-    );
+    const res = await fetch(`/api/accounts/geo/reverse/?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
     if (!res.ok) return "";
     const data = await res.json();
-    const addr = data.address || {};
-    return addr.city || addr.town || addr.village || addr.county || "";
+    return data.city || "";
   } catch {
     return "";
   }
 }
 
-function detectCityByBrowser() {
+async function getBestBrowserPosition() {
   if (!("geolocation" in navigator)) {
-    return Promise.resolve("");
+    return null;
   }
 
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const cityName = await reverseGeocodeCity(latitude, longitude);
-        resolve(cityName || "");
-      },
-      () => resolve(""),
-      {
-        enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 300000,
-      }
-    );
+  const tryOnce = () =>
+    new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve(position),
+        () => resolve(null),
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
+        }
+      );
+    });
+
+  let best = null;
+  for (let i = 0; i < 2; i += 1) {
+    const pos = await tryOnce();
+    if (!pos) continue;
+    if (!best || pos.coords.accuracy < best.coords.accuracy) {
+      best = pos;
+    }
+    if (best.coords.accuracy <= 120) break;
+  }
+  return best;
+}
+
+async function detectCityByBrowser() {
+  const pos = await getBestBrowserPosition();
+  if (!pos) return "";
+
+  const accuracy = Math.round(pos.coords.accuracy || 0);
+  if (accuracy > 150) {
+    if (cityInfoEl) {
+      cityInfoEl.textContent = `Low accuracy (${accuracy}m). Move near window and retry.`;
+      cityInfoEl.classList.remove("hidden");
+    }
+    return "";
+  }
+
+  const { latitude, longitude } = pos.coords;
+  const cityName = await reverseGeocodeCity(latitude, longitude);
+  if (cityInfoEl) {
+    cityInfoEl.textContent = cityName
+      ? `Detected city: ${cityName}`
+      : "Could not detect city. Enter manually.";
+    cityInfoEl.classList.remove("hidden");
+  }
+  return cityName || "";
+}
+
+if (useCurrentCityBtn) {
+  useCurrentCityBtn.addEventListener("click", async () => {
+    useCurrentCityBtn.disabled = true;
+    useCurrentCityBtn.textContent = "Detecting...";
+    const browserCity = await detectCityByBrowser();
+    if (browserCity) {
+      city.value = browserCity;
+    }
+    useCurrentCityBtn.disabled = false;
+    useCurrentCityBtn.textContent = "Use Current Location";
   });
 }
 
@@ -232,6 +277,7 @@ document
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: username.value,
+          full_name: fullName.value.trim(),
           email: email.value,
           password: password.value,
           phone: phone.value,

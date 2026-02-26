@@ -16,6 +16,14 @@
     </h2>
 
     <input
+      id="full_name"
+      type="text"
+      placeholder="Full Name"
+      class="w-full border p-2 mb-3 rounded"
+      required
+    />
+
+    <input
       id="username"
       type="text"
       placeholder="Username"
@@ -74,6 +82,16 @@
       class="w-full border p-2 mb-3 rounded"
       required
     />
+    <div class="mb-3">
+      <button
+        id="use-current-city"
+        type="button"
+        class="px-3 py-2 bg-slate-100 text-slate-800 rounded text-sm border"
+      >
+        Use Current Location
+      </button>
+      <p id="city-info" class="text-xs text-slate-600 mt-1 hidden"></p>
+    </div>
 
     <!-- 🔥 SERVICES MULTI SELECT -->
     <label class="block font-semibold mb-1">

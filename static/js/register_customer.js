@@ -1,4 +1,5 @@
 const form = document.getElementById("register-form");
+const fullNameEl = document.getElementById("full_name");
 const usernameEl = document.getElementById("username");
 const emailEl = document.getElementById("email");
 const passwordEl = document.getElementById("password");
@@ -81,6 +82,7 @@ if (form) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          full_name: fullNameEl.value.trim(),
           username: usernameEl.value.trim(),
           email: emailEl.value.trim(),
           password: passwordEl.value,
