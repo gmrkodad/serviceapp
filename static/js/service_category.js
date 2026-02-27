@@ -246,7 +246,7 @@ function renderProviders() {
   providers.forEach((p) => {
     const providerName = p.full_name || p.username || "Provider";
     const card = document.createElement("div");
-    card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition p-5";
+    card.className = "bg-white rounded-2xl border border-blue-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition p-5";
     card.innerHTML = `
       <div class="flex items-center space-x-4">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xl border border-slate-200">
@@ -262,7 +262,7 @@ function renderProviders() {
         </div>
       </div>
       <button
-        class="mt-5 w-full bg-slate-900 text-white py-2.5 rounded-xl hover:bg-slate-800 transition"
+        class="mt-5 w-full bg-blue-600 text-white py-2.5 rounded-xl hover:bg-blue-700 transition"
         onclick="bookService(${p.user_id})"
       >
         Book Service
