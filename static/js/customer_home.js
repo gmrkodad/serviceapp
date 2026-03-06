@@ -9,7 +9,6 @@ async function refreshAccessToken() {
   });
 
   if (!res.ok) return null;
-
   const data = await res.json();
   if (!data.access) return null;
 
@@ -25,7 +24,6 @@ async function authFetch(url, options = {}) {
   };
 
   let res = await fetch(url, { ...options, headers });
-
   if (res.status !== 401) return res;
 
   const newAccess = await refreshAccessToken();
@@ -35,7 +33,6 @@ async function authFetch(url, options = {}) {
     ...(options.headers || {}),
     Authorization: `Bearer ${newAccess}`,
   };
-
   return fetch(url, { ...options, headers: retryHeaders });
 }
 
@@ -46,16 +43,12 @@ async function saveCustomerCity(city) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ city }),
   });
-  if (res.status === 401) {
-    window.location.href = "/login/";
-  }
+  if (res.status === 401) window.location.href = "/login/";
 }
 
 async function ensureAccessTokenOrRedirect() {
   let token = localStorage.getItem("access");
-  if (!token) {
-    token = await refreshAccessToken();
-  }
+  if (!token) token = await refreshAccessToken();
   if (!token) {
     window.location.href = "/login/";
     return false;
@@ -70,6 +63,57 @@ const locationCity = document.getElementById("location-city");
 const locationApply = document.getElementById("location-apply");
 let allCategories = [];
 
+const imageByKeyword = {
+  cleaning: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=85",
+  kitchen: "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1200&q=85",
+  bathroom: "https://images.unsplash.com/photo-1595514535415-dae04f9dcb5f?auto=format&fit=crop&w=1200&q=85",
+  bedroom: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=85",
+  living: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=85",
+  sofa: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=85",
+  plumbing: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=1200&q=85",
+  electrician: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1200&q=85",
+  electric: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1200&q=85",
+  ac: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=1200&q=85",
+  appliance: "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=85",
+  laptop: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=1200&q=85",
+  beauty: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=85",
+  hair: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1200&q=85",
+  spa: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=85",
+  massage: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=85",
+  painting: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=1200&q=85",
+  carpenter: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=1200&q=85",
+  carpentry: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=1200&q=85",
+  pest: "https://images.unsplash.com/photo-1581578021606-4083bf498ad1?auto=format&fit=crop&w=1200&q=85",
+  water: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1200&q=85",
+  purifier: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1200&q=85",
+  lock: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1200&q=85",
+  salon: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1200&q=85",
+  default: "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=85",
+};
+
+const featuredCategoryNames = new Set([
+  "Wall makeover by Revamp",
+  "Native Water Purifier",
+  "Living & Bedroom Cleaning",
+  "Native Smart Locks",
+]);
+
+function resolveCategoryImage(category) {
+  const haystack = [
+    category?.name || "",
+    ...(category?.services || []).map((s) => s.name || ""),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  for (const key of Object.keys(imageByKeyword)) {
+    if (key !== "default" && haystack.includes(key)) {
+      return imageByKeyword[key];
+    }
+  }
+  return imageByKeyword.default;
+}
+
 async function reverseGeocodeCity(lat, lon) {
   try {
     const res = await fetch(
@@ -78,13 +122,7 @@ async function reverseGeocodeCity(lat, lon) {
     if (!res.ok) return "";
     const data = await res.json();
     const addr = data.address || {};
-    return (
-      addr.city ||
-      addr.town ||
-      addr.village ||
-      addr.county ||
-      ""
-    );
+    return addr.city || addr.town || addr.village || addr.county || "";
   } catch {
     return "";
   }
@@ -110,9 +148,7 @@ async function getBestBrowserPosition() {
   for (let i = 0; i < 2; i += 1) {
     const pos = await tryOnce();
     if (!pos) continue;
-    if (!best || pos.coords.accuracy < best.coords.accuracy) {
-      best = pos;
-    }
+    if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
     if (best.coords.accuracy <= 120) break;
   }
   return best;
@@ -131,58 +167,68 @@ async function detectLocationByBrowser() {
   return true;
 }
 
-const categoryIcons = {
-  "Home Cleaning": {
-    bg: "from-cyan-100 to-blue-100",
-    icon: `<path d="M3 11l9-8 9 8M5 10v10h14V10" /><path d="M9 20v-6h6v6" />`,
-  },
-  Plumbing: {
-    bg: "from-sky-100 to-teal-100",
-    icon: `<path d="M7 4h10v4H7zM9 8v6m6-6v6M7 14h10v6H7z" />`,
-  },
-  Electrician: {
-    bg: "from-yellow-100 to-amber-100",
-    icon: `<path d="M13 2L6 13h5l-1 9 8-12h-5l0-8z" />`,
-  },
-  "AC Repair": {
-    bg: "from-blue-100 to-indigo-100",
-    icon: `<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1L19.1 4.9" />`,
-  },
-  Beauty: {
-    bg: "from-pink-100 to-rose-100",
-    icon: `<path d="M12 3l2.3 4.7L19 10l-4.7 2.3L12 17l-2.3-4.7L5 10l4.7-2.3z" />`,
-  },
-  "Appliance Repair": {
-    bg: "from-slate-100 to-zinc-100",
-    icon: `<path d="M4 6h16v14H4zM9 2v4m6-4v4M8 11h8" />`,
-  },
-  Painting: {
-    bg: "from-violet-100 to-fuchsia-100",
-    icon: `<path d="M3 14l7-7 4 4-7 7H3zM14 7l2-2 3 3-2 2z" />`,
-  },
-  "Pest Control": {
-    bg: "from-lime-100 to-emerald-100",
-    icon: `<path d="M12 8v8M8 10l-3-3M16 10l3-3M8 14l-3 3M16 14l3 3M9 8h6M8 18h8" />`,
-  },
-  Carpentry: {
-    bg: "from-orange-100 to-amber-100",
-    icon: `<path d="M3 21l9-9m0 0l2-2 5 5-2 2m-5-5L8 8l2-2 4 4" />`,
-  },
-  Default: {
-    bg: "from-slate-100 to-gray-100",
-    icon: `<path d="M14.7 6.3l3 3-8.4 8.4H6.3v-3zM13.3 4.9l1.4-1.4 3 3-1.4 1.4z" />`,
-  },
-};
+function normalize(text) {
+  return (text || "").toLowerCase();
+}
 
-function getCategoryIconMarkup(name) {
-  const item = categoryIcons[name] || categoryIcons.Default;
-  return `
-    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br ${item.bg} flex items-center justify-center shadow-inner mb-4">
-      <svg viewBox="0 0 24 24" class="w-8 h-8 text-slate-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        ${item.icon}
-      </svg>
-    </div>
-  `;
+function createCategoryCard(cat, isFeatured, index) {
+  const card = document.createElement("article");
+  card.className =
+    "group cursor-pointer rounded-3xl transition-all hover:-translate-y-1";
+  card.addEventListener("click", () => {
+    window.location.href = `/services/${cat.id}/`;
+  });
+
+  const mediaWrap = document.createElement("div");
+  mediaWrap.className =
+    "relative rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm";
+
+  const image = document.createElement("img");
+  image.className = "uc-card-img transition-transform duration-300 group-hover:scale-[1.03]";
+  image.loading = index < 6 ? "eager" : "lazy";
+  image.decoding = "async";
+  image.src = resolveCategoryImage(cat);
+  image.alt = `${cat.name} service`;
+  image.referrerPolicy = "no-referrer";
+  mediaWrap.appendChild(image);
+
+  if (isFeatured) {
+    const badge = document.createElement("span");
+    badge.className =
+      "absolute left-3 top-3 rounded-lg bg-fuchsia-700 text-white text-xs font-bold px-2 py-1 tracking-wide";
+    badge.textContent = "NEW";
+    mediaWrap.appendChild(badge);
+  }
+
+  const title = document.createElement("h3");
+  title.className = "mt-3 text-[17px] md:text-[20px] font-semibold text-slate-900";
+  title.textContent = cat.name;
+
+  card.appendChild(mediaWrap);
+  card.appendChild(title);
+  return card;
+}
+
+function renderCategories(query) {
+  const q = normalize(query);
+  categoriesDiv.innerHTML = "";
+
+  const filtered = allCategories.filter((cat) => {
+    if (normalize(cat.name).includes(q)) return true;
+    return (cat.services || []).some((s) => normalize(s.name).includes(q));
+  });
+
+  if (!filtered.length) {
+    if (noResults) noResults.classList.remove("hidden");
+    return;
+  }
+  if (noResults) noResults.classList.add("hidden");
+
+  filtered.forEach((cat, index) => {
+    const isFeatured =
+      featuredCategoryNames.has(cat.name) || index < 2;
+    categoriesDiv.appendChild(createCategoryCard(cat, isFeatured, index));
+  });
 }
 
 (async () => {
@@ -198,9 +244,6 @@ function getCategoryIconMarkup(name) {
     }
   }
 
-  // ==========================
-  // LOAD ONLY CATEGORIES (NO SERVICES)
-  // ==========================
   authFetch("/api/services/categories/")
     .then((res) => {
       if (res.status === 401) {
@@ -210,7 +253,7 @@ function getCategoryIconMarkup(name) {
       return res.json();
     })
     .then((categories) => {
-      if (!categories.length) return;
+      if (!Array.isArray(categories) || !categories.length) return;
       allCategories = categories;
       renderCategories("");
     });
@@ -218,9 +261,7 @@ function getCategoryIconMarkup(name) {
   authFetch("/api/accounts/me/")
     .then((res) => (res.ok ? res.json() : null))
     .then((user) => {
-      if (user && user.role === "ADMIN") {
-        window.location.href = "/admin-panel/";
-      }
+      if (user && user.role === "ADMIN") window.location.href = "/admin-panel/";
     });
 })();
 
@@ -230,61 +271,6 @@ if (locationApply) {
     localStorage.setItem("location_city", city);
     localStorage.setItem("location_source", "manual");
     await saveCustomerCity(city);
-  });
-}
-
-function normalize(text) {
-  return (text || "").toLowerCase();
-}
-
-function renderCategories(query) {
-  const q = normalize(query);
-  categoriesDiv.innerHTML = "";
-
-  const filtered = allCategories.filter((cat) => {
-    if (normalize(cat.name).includes(q)) return true;
-    return (cat.services || []).some((s) =>
-      normalize(s.name).includes(q)
-    );
-  });
-
-  if (!filtered.length) {
-    if (noResults) noResults.classList.remove("hidden");
-    return;
-  }
-
-  if (noResults) noResults.classList.add("hidden");
-
-  filtered.forEach((cat) => {
-    const iconMarkup = getCategoryIconMarkup(cat.name);
-    const startsFrom = (cat.services || []).reduce((min, s) => {
-      const price = Number(s.starts_from ?? s.base_price ?? 0);
-      if (!price) return min;
-      if (min === null) return price;
-      return price < min ? price : min;
-    }, null);
-
-    const card = document.createElement("div");
-    card.className = `
-        bg-white/90 rounded-2xl border border-slate-100 shadow
-        hover:shadow-xl hover:-translate-y-1 hover:border-blue-200
-        transition-all cursor-pointer
-        p-6 flex flex-col items-center text-center
-      `;
-
-    card.innerHTML = `
-        ${iconMarkup}
-        <h3 class="text-lg font-semibold text-slate-900">${cat.name}</h3>
-        <p class="text-sm text-slate-500 mt-1">
-          ${startsFrom ? `Starts from Rs.${startsFrom}` : "Pricing on request"}
-        </p>
-      `;
-
-    card.onclick = () => {
-      window.location.href = `/services/${cat.id}/`;
-    };
-
-    categoriesDiv.appendChild(card);
   });
 }
 

@@ -3,57 +3,72 @@
 
 {% block content %}
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-  .uc-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+  .uc-shell { font-family: 'Manrope', ui-sans-serif, system-ui; }
+  .uc-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%);
+    border: 1px solid #ececef;
+  }
+  .uc-search-pill {
+    border: 1px solid #e3e4e8;
+    background: #ffffff;
+  }
+  .uc-card-img {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    object-fit: cover;
+  }
 </style>
 
-<section class="uc-font bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-sm border border-blue-600/30">
-  <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-    <div>
-      <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-3">
-        Home services, at your doorstep
-      </h1>
-      <p class="text-base md:text-lg text-blue-100">
-        Book trusted professionals for all your needs
-      </p>
-    </div>
+<section class="uc-shell">
+  <div class="uc-panel rounded-[26px] p-4 md:p-6 shadow-sm">
+    <div class="flex flex-col gap-4 md:gap-5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-sm md:text-base text-slate-500 font-medium">Find services near you</p>
+          <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight text-slate-900 mt-1">
+            Home Services Marketplace
+          </h1>
+        </div>
+        <a
+          href="/dashboard/customer/"
+          class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition">
+          My Bookings
+        </a>
+      </div>
 
-    <a
-      href="/dashboard/customer/"
-      class="bg-white text-blue-700 font-semibold px-6 py-3 rounded-2xl hover:bg-blue-50 transition">
-      Go to Dashboard
-    </a>
-  </div>
-</section>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div class="uc-search-pill rounded-2xl px-4 py-3 flex items-center gap-3">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 21s8-6.2 8-12a8 8 0 10-16 0c0 5.8 8 12 8 12z"></path>
+            <circle cx="12" cy="9" r="2.8"></circle>
+          </svg>
+          <input id="location-city" class="w-full outline-none text-slate-800" placeholder="Enter your city" />
+          <button id="location-apply" class="text-sm font-semibold text-slate-700 hover:text-slate-900">Apply</button>
+        </div>
 
-<section class="uc-font mb-8">
-  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 md:p-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-    <div>
-      <p class="text-sm text-slate-500">Choose your location</p>
-      <p class="text-lg font-semibold text-slate-900">Find services near you</p>
-    </div>
-    <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-      <input id="location-city" class="w-full sm:w-56 border border-slate-300 rounded-xl px-3 py-2.5" placeholder="City" />
-      <button id="location-apply" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">Apply</button>
-    </div>
-  </div>
-</section>
-
-<section class="uc-font">
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-    <h2 class="text-2xl font-semibold tracking-tight">Popular Services</h2>
-    <div class="w-full md:w-80">
-      <input
-        id="service-search"
-        type="text"
-        placeholder="Search services..."
-        class="w-full border border-slate-300 rounded-xl px-4 py-2.5"
-      />
+        <div class="uc-search-pill rounded-2xl px-4 py-3 flex items-center gap-3">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input
+            id="service-search"
+            type="text"
+            placeholder="Search for services"
+            class="w-full outline-none text-slate-800"
+          />
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="categories" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
-  <p id="no-results" class="text-slate-500 mt-4 hidden">No matching services found.</p>
+  <section class="mt-8">
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 mb-5">For Home & Living</h2>
+    <div id="categories" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5"></div>
+    <p id="no-results" class="text-slate-500 mt-4 hidden">No matching services found.</p>
+  </section>
 </section>
 
 <script src="{% static 'js/customer_home.js' %}"></script>
