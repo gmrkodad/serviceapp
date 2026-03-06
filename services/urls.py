@@ -7,6 +7,7 @@ from .views import (
     AdminCategoryDetailAPIView,
     AdminServiceListCreateAPIView,
     AdminServiceDetailAPIView,
+    AdminImageUploadAPIView,
 )
 
 urlpatterns = [
@@ -18,5 +19,6 @@ urlpatterns = [
     path("admin/categories/<int:category_id>/", AdminCategoryDetailAPIView.as_view()),
     path("admin/services/", AdminServiceListCreateAPIView.as_view()),
     path("admin/services/<int:service_id>/", AdminServiceDetailAPIView.as_view()),
+    path("admin/upload-image/", AdminImageUploadAPIView.as_view()),
 
 ]

@@ -239,7 +239,15 @@ function renderCategories(query) {
   const ok = await ensureAccessTokenOrRedirect();
   if (!ok) return;
 
-  await detectLocationByBrowser();
+  detectLocationByBrowser().then(() => {
+    if (locationCity && !locationCity.value.trim()) {
+      const detected = localStorage.getItem("location_city") || "";
+      if (detected) {
+        locationCity.value = detected;
+        saveCustomerCity(detected);
+      }
+    }
+  });
 
   if (locationCity) {
     locationCity.value = localStorage.getItem("location_city") || "";

@@ -1,7 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from accounts.permissions import IsAdmin
+from django.core.files.storage import default_storage
+from django.utils.text import get_valid_filename
+from pathlib import Path
+from uuid import uuid4
 
 from .models import ServiceCategory
 from .serializers import ServiceCategorySerializer, ServiceCategoryAdminSerializer, ServiceAdminSerializer
@@ -128,3 +133,24 @@ class AdminServiceDetailAPIView(APIView):
             return Response({"error": "Service not found"}, status=404)
         service.delete()
         return Response({"message": "Service deleted"})
+
+
+class AdminImageUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        uploaded = request.FILES.get("image")
+        if not uploaded:
+            return Response({"error": "No image file provided"}, status=400)
+
+        allowed_ext = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+        ext = Path(uploaded.name).suffix.lower()
+        if ext not in allowed_ext:
+            return Response({"error": "Unsupported file type"}, status=400)
+
+        safe_stem = get_valid_filename(Path(uploaded.name).stem)[:80] or "image"
+        filename = f"service_uploads/{safe_stem}-{uuid4().hex[:10]}{ext}"
+        stored_name = default_storage.save(filename, uploaded)
+        absolute_url = request.build_absolute_uri(default_storage.url(stored_name))
+        return Response({"url": absolute_url}, status=201)

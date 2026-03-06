@@ -15,6 +15,9 @@
   const filterActive = document.getElementById("filter-service-active");
   const categoryError = document.getElementById("category-error");
   const serviceError = document.getElementById("service-error");
+  const serviceImageFile = document.getElementById("service-image-file");
+  const serviceImageUploadBtn = document.getElementById("service-image-upload-btn");
+  const serviceImageUrlInput = document.getElementById("service-image-url");
   let categoriesCache = [];
   let servicesCache = [];
 
@@ -295,6 +298,28 @@
     });
   }
 
+  async function uploadImageFile(file) {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await authFetch("/api/services/admin/upload-image/", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.status === 401) {
+      handleUnauthorized();
+      return null;
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Image upload failed");
+    }
+
+    const data = await res.json();
+    return data.url || null;
+  }
+
   if (categoryForm) {
     categoryForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -336,10 +361,24 @@
 
       const name = document.getElementById("service-name").value;
       const description = document.getElementById("service-description").value;
-      const image_url = document.getElementById("service-image-url").value;
+      let image_url = document.getElementById("service-image-url").value;
       const base_price = document.getElementById("service-price").value;
       const category = document.getElementById("service-category").value;
       const is_active = document.getElementById("service-active").checked;
+
+      const selectedFile = serviceImageFile?.files?.[0];
+      if (!image_url && selectedFile) {
+        try {
+          image_url = (await uploadImageFile(selectedFile)) || "";
+          if (serviceImageUrlInput) {
+            serviceImageUrlInput.value = image_url;
+          }
+        } catch (err) {
+          serviceError.textContent = err.message || "Image upload failed";
+          serviceError.classList.remove("hidden");
+          return;
+        }
+      }
 
       const res = await authFetch("/api/services/admin/services/", {
         method: "POST",
@@ -362,6 +401,33 @@
       serviceForm.reset();
       document.getElementById("service-active").checked = true;
       refreshLists();
+    });
+  }
+
+  if (serviceImageUploadBtn) {
+    serviceImageUploadBtn.addEventListener("click", async () => {
+      serviceError.classList.add("hidden");
+      const file = serviceImageFile?.files?.[0];
+      if (!file) {
+        serviceError.textContent = "Please choose an image file first";
+        serviceError.classList.remove("hidden");
+        return;
+      }
+
+      serviceImageUploadBtn.disabled = true;
+      serviceImageUploadBtn.textContent = "Uploading...";
+      try {
+        const url = await uploadImageFile(file);
+        if (url && serviceImageUrlInput) {
+          serviceImageUrlInput.value = url;
+        }
+      } catch (err) {
+        serviceError.textContent = err.message || "Image upload failed";
+        serviceError.classList.remove("hidden");
+      } finally {
+        serviceImageUploadBtn.disabled = false;
+        serviceImageUploadBtn.textContent = "Upload Image";
+      }
     });
   }
 
