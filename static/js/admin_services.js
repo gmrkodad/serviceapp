@@ -116,8 +116,30 @@
             </button>
           </div>
         </div>
+        <div class="mt-3 hidden border-t pt-3" data-category-edit-form="${c.id}">
+          <div class="grid grid-cols-1 gap-2">
+            <input class="border rounded p-2 text-sm" data-category-edit-name="${c.id}" placeholder="Category name" />
+            <textarea class="border rounded p-2 text-sm" rows="2" data-category-edit-description="${c.id}" placeholder="Description"></textarea>
+            <input class="border rounded p-2 text-sm" data-category-edit-image="${c.id}" placeholder="Image URL (https://...)" />
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <button class="text-xs px-3 py-1.5 rounded bg-slate-900 text-white" data-save-category-edit="${c.id}">
+              Save
+            </button>
+            <button class="text-xs px-3 py-1.5 rounded bg-slate-200 text-slate-700" data-cancel-category-edit="${c.id}">
+              Cancel
+            </button>
+          </div>
+        </div>
       `;
       categoriesList.appendChild(li);
+
+      const nameInput = li.querySelector(`[data-category-edit-name="${c.id}"]`);
+      const descInput = li.querySelector(`[data-category-edit-description="${c.id}"]`);
+      const imageInput = li.querySelector(`[data-category-edit-image="${c.id}"]`);
+      if (nameInput) nameInput.value = c.name || "";
+      if (descInput) descInput.value = c.description || "";
+      if (imageInput) imageInput.value = c.image_url || "";
 
       const option = document.createElement("option");
       option.value = c.id;
@@ -134,6 +156,8 @@
 
     bindCategoryToggles();
     bindCategoryEdits();
+    bindCategoryEditSaves();
+    bindCategoryEditCancels();
     bindCategoryDeletes();
   }
 
@@ -179,13 +203,53 @@
             </button>
           </div>
         </div>
+        <div class="mt-3 hidden border-t pt-3" data-service-edit-form="${s.id}">
+          <div class="grid grid-cols-1 gap-2">
+            <input class="border rounded p-2 text-sm" data-service-edit-name="${s.id}" placeholder="Service name" />
+            <textarea class="border rounded p-2 text-sm" rows="2" data-service-edit-description="${s.id}" placeholder="Description"></textarea>
+            <input type="number" step="0.01" class="border rounded p-2 text-sm" data-service-edit-price="${s.id}" placeholder="Base price" />
+            <input class="border rounded p-2 text-sm" data-service-edit-image="${s.id}" placeholder="Image URL (https://...)" />
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="file" accept="image/*" class="border rounded p-2 text-sm w-full" data-service-edit-file="${s.id}" />
+              <button class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-service-edit-upload="${s.id}">
+                Upload
+              </button>
+            </div>
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <button class="text-xs px-3 py-1.5 rounded bg-slate-900 text-white" data-save-service-edit="${s.id}">
+              Save
+            </button>
+            <button class="text-xs px-3 py-1.5 rounded bg-slate-200 text-slate-700" data-cancel-service-edit="${s.id}">
+              Cancel
+            </button>
+          </div>
+        </div>
       `;
       servicesList.appendChild(li);
+
+      const nameInput = li.querySelector(`[data-service-edit-name="${s.id}"]`);
+      const descInput = li.querySelector(`[data-service-edit-description="${s.id}"]`);
+      const priceInput = li.querySelector(`[data-service-edit-price="${s.id}"]`);
+      const imageInput = li.querySelector(`[data-service-edit-image="${s.id}"]`);
+      if (nameInput) nameInput.value = s.name || "";
+      if (descInput) descInput.value = s.description || "";
+      if (priceInput) priceInput.value = s.base_price || "";
+      if (imageInput) imageInput.value = s.image_url || "";
     });
 
     bindServiceToggles();
     bindServiceEdits();
+    bindServiceEditSaves();
+    bindServiceEditCancels();
+    bindServiceImageUploads();
     bindServiceDeletes();
+  }
+
+  function closeAllInlineEditors() {
+    document.querySelectorAll("[data-category-edit-form], [data-service-edit-form]").forEach((el) => {
+      el.classList.add("hidden");
+    });
   }
 
   async function refreshLists() {
@@ -213,13 +277,23 @@
     document.querySelectorAll("[data-edit-category]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-edit-category");
-        const category = categoriesCache.find((item) => String(item.id) === String(id)) || {};
-        const name = prompt("Category name:", category.name || "");
-        if (name === null) return;
-        const description = prompt("Description:", category.description || "");
-        if (description === null) return;
-        const image_url = prompt("Image URL (https://...):", category.image_url || "");
-        if (image_url === null) return;
+        const form = document.querySelector(`[data-category-edit-form="${id}"]`);
+        if (!form) return;
+        const isHidden = form.classList.contains("hidden");
+        closeAllInlineEditors();
+        if (isHidden) form.classList.remove("hidden");
+      });
+    });
+  }
+
+  function bindCategoryEditSaves() {
+    document.querySelectorAll("[data-save-category-edit]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-save-category-edit");
+        const name = document.querySelector(`[data-category-edit-name="${id}"]`)?.value?.trim() || "";
+        const description = document.querySelector(`[data-category-edit-description="${id}"]`)?.value || "";
+        const image_url = document.querySelector(`[data-category-edit-image="${id}"]`)?.value?.trim() || "";
+        if (!name) return;
 
         await authFetch(`/api/services/admin/categories/${id}/`, {
           method: "PUT",
@@ -227,6 +301,16 @@
           body: JSON.stringify({ name, description, image_url }),
         });
         refreshLists();
+      });
+    });
+  }
+
+  function bindCategoryEditCancels() {
+    document.querySelectorAll("[data-cancel-category-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-cancel-category-edit");
+        const form = document.querySelector(`[data-category-edit-form="${id}"]`);
+        if (form) form.classList.add("hidden");
       });
     });
   }
@@ -264,15 +348,24 @@
     document.querySelectorAll("[data-edit-service]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-edit-service");
-        const service = servicesCache.find((item) => String(item.id) === String(id)) || {};
-        const name = prompt("Service name:", service.name || "");
-        if (name === null) return;
-        const description = prompt("Description:", service.description || "");
-        if (description === null) return;
-        const base_price = prompt("Base price:", service.base_price || "");
-        if (base_price === null) return;
-        const image_url = prompt("Image URL (https://...):", service.image_url || "");
-        if (image_url === null) return;
+        const form = document.querySelector(`[data-service-edit-form="${id}"]`);
+        if (!form) return;
+        const isHidden = form.classList.contains("hidden");
+        closeAllInlineEditors();
+        if (isHidden) form.classList.remove("hidden");
+      });
+    });
+  }
+
+  function bindServiceEditSaves() {
+    document.querySelectorAll("[data-save-service-edit]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-save-service-edit");
+        const name = document.querySelector(`[data-service-edit-name="${id}"]`)?.value?.trim() || "";
+        const description = document.querySelector(`[data-service-edit-description="${id}"]`)?.value || "";
+        const base_price = document.querySelector(`[data-service-edit-price="${id}"]`)?.value || "";
+        const image_url = document.querySelector(`[data-service-edit-image="${id}"]`)?.value?.trim() || "";
+        if (!name || !base_price) return;
 
         await authFetch(`/api/services/admin/services/${id}/`, {
           method: "PUT",
@@ -280,6 +373,39 @@
           body: JSON.stringify({ name, description, base_price, image_url }),
         });
         refreshLists();
+      });
+    });
+  }
+
+  function bindServiceEditCancels() {
+    document.querySelectorAll("[data-cancel-service-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-cancel-service-edit");
+        const form = document.querySelector(`[data-service-edit-form="${id}"]`);
+        if (form) form.classList.add("hidden");
+      });
+    });
+  }
+
+  function bindServiceImageUploads() {
+    document.querySelectorAll("[data-service-edit-upload]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-service-edit-upload");
+        const fileInput = document.querySelector(`[data-service-edit-file="${id}"]`);
+        const imageInput = document.querySelector(`[data-service-edit-image="${id}"]`);
+        const file = fileInput?.files?.[0];
+        if (!file) return;
+
+        btn.disabled = true;
+        const oldLabel = btn.textContent;
+        btn.textContent = "Uploading...";
+        try {
+          const url = await uploadImageFile(file);
+          if (url && imageInput) imageInput.value = url;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldLabel;
+        }
       });
     });
   }
