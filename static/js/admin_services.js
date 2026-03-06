@@ -45,7 +45,6 @@
     };
 
     let res = await fetch(url, { ...options, headers });
-
     if (res.status !== 401) return res;
 
     const newAccess = await refreshAccessToken();
@@ -98,6 +97,7 @@
           <div>
             <p class="font-semibold">${c.name}</p>
             <p class="text-xs text-slate-500">${c.description || "No description"}</p>
+            <p class="text-xs text-slate-400 break-all">${c.image_url || "No image URL"}</p>
           </div>
           <div class="flex items-center gap-2">
             <button class="text-xs px-2 py-1 rounded ${
@@ -148,8 +148,7 @@
         (s.name || "").toLowerCase().includes(q) ||
         (s.category_name || "").toLowerCase().includes(q);
       const matchCat = !catId || String(s.category) === catId;
-      const matchActive =
-        active === "" ? true : String(s.is_active) === active;
+      const matchActive = active === "" ? true : String(s.is_active) === active;
       return matchSearch && matchCat && matchActive;
     });
 
@@ -161,6 +160,7 @@
           <div>
             <p class="font-semibold">${s.name} <span class="text-xs text-slate-500">(${s.category_name})</span></p>
             <p class="text-xs text-slate-500">INR ${s.base_price}</p>
+            <p class="text-xs text-slate-400 break-all">${s.image_url || "No image URL"}</p>
           </div>
           <div class="flex items-center gap-2">
             <button class="text-xs px-2 py-1 rounded ${
@@ -186,10 +186,7 @@
   }
 
   async function refreshLists() {
-    const [categories, services] = await Promise.all([
-      loadCategories(),
-      loadServices(),
-    ]);
+    const [categories, services] = await Promise.all([loadCategories(), loadServices()]);
     renderCategories(categories);
     renderServices(services);
   }
@@ -213,15 +210,18 @@
     document.querySelectorAll("[data-edit-category]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-edit-category");
-        const name = prompt("Category name:");
+        const category = categoriesCache.find((item) => String(item.id) === String(id)) || {};
+        const name = prompt("Category name:", category.name || "");
         if (name === null) return;
-        const description = prompt("Description:", "");
+        const description = prompt("Description:", category.description || "");
         if (description === null) return;
+        const image_url = prompt("Image URL (https://...):", category.image_url || "");
+        if (image_url === null) return;
 
         await authFetch(`/api/services/admin/categories/${id}/`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, description }),
+          body: JSON.stringify({ name, description, image_url }),
         });
         refreshLists();
       });
@@ -261,17 +261,20 @@
     document.querySelectorAll("[data-edit-service]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-edit-service");
-        const name = prompt("Service name:");
+        const service = servicesCache.find((item) => String(item.id) === String(id)) || {};
+        const name = prompt("Service name:", service.name || "");
         if (name === null) return;
-        const description = prompt("Description:", "");
+        const description = prompt("Description:", service.description || "");
         if (description === null) return;
-        const base_price = prompt("Base price:", "");
+        const base_price = prompt("Base price:", service.base_price || "");
         if (base_price === null) return;
+        const image_url = prompt("Image URL (https://...):", service.image_url || "");
+        if (image_url === null) return;
 
         await authFetch(`/api/services/admin/services/${id}/`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, description, base_price }),
+          body: JSON.stringify({ name, description, base_price, image_url }),
         });
         refreshLists();
       });
@@ -299,12 +302,13 @@
 
       const name = document.getElementById("category-name").value;
       const description = document.getElementById("category-description").value;
+      const image_url = document.getElementById("category-image-url").value;
       const is_active = document.getElementById("category-active").checked;
 
       const res = await authFetch("/api/services/admin/categories/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, is_active }),
+        body: JSON.stringify({ name, description, image_url, is_active }),
       });
 
       if (res.status === 401) {
@@ -314,7 +318,7 @@
 
       if (!res.ok) {
         const data = await res.json();
-        categoryError.textContent = data.name?.[0] || "Category creation failed";
+        categoryError.textContent = data.name?.[0] || data.image_url?.[0] || "Category creation failed";
         categoryError.classList.remove("hidden");
         return;
       }
@@ -332,6 +336,7 @@
 
       const name = document.getElementById("service-name").value;
       const description = document.getElementById("service-description").value;
+      const image_url = document.getElementById("service-image-url").value;
       const base_price = document.getElementById("service-price").value;
       const category = document.getElementById("service-category").value;
       const is_active = document.getElementById("service-active").checked;
@@ -339,7 +344,7 @@
       const res = await authFetch("/api/services/admin/services/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, base_price, category, is_active }),
+        body: JSON.stringify({ name, description, image_url, base_price, category, is_active }),
       });
 
       if (res.status === 401) {
@@ -349,7 +354,7 @@
 
       if (!res.ok) {
         const data = await res.json();
-        serviceError.textContent = data.name?.[0] || "Service creation failed";
+        serviceError.textContent = data.name?.[0] || data.image_url?.[0] || "Service creation failed";
         serviceError.classList.remove("hidden");
         return;
       }

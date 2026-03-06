@@ -99,6 +99,10 @@ const featuredCategoryNames = new Set([
 ]);
 
 function resolveCategoryImage(category) {
+  if (category?.image_url) return category.image_url;
+  const serviceImage = (category?.services || []).find((s) => s?.image_url)?.image_url;
+  if (serviceImage) return serviceImage;
+
   const haystack = [
     category?.name || "",
     ...(category?.services || []).map((s) => s.name || ""),

@@ -12,6 +12,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "category",
             "name",
             "description",
+            "image_url",
             "base_price",
             "is_active",
             "created_at",
@@ -30,7 +31,7 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ServiceCategory
-        fields = ['id', 'name', 'description', 'services']
+        fields = ["id", "name", "description", "image_url", "services"]
 
 # services/serializers.py
 from rest_framework import serializers
@@ -73,7 +74,7 @@ class ProviderListSerializer(serializers.ModelSerializer):
 class ServiceCategoryAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceCategory
-        fields = ["id", "name", "description", "is_active"]
+        fields = ["id", "name", "description", "image_url", "is_active"]
 
 
 class ServiceAdminSerializer(serializers.ModelSerializer):
@@ -85,6 +86,7 @@ class ServiceAdminSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
+            "image_url",
             "base_price",
             "is_active",
             "category",
