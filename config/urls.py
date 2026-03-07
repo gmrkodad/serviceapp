@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -31,6 +32,12 @@ urlpatterns = [
     path("", include("frontend.urls")),
 ]
 
-# Temporary production media serving so uploaded category/service images render.
-# For long-term reliability on Railway, migrate media to object storage (S3/Cloudinary).
+# Serve media in local debug mode.
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Railway runs with DEBUG=False; `static()` becomes a no-op there.
+# This explicit route keeps uploaded media URLs working until object storage is added.
+if not settings.DEBUG:
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    ]
