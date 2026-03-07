@@ -211,8 +211,8 @@
             <input class="border rounded p-2 text-sm" data-service-edit-image="${s.id}" placeholder="Image URL (https://...)" />
             <div class="flex flex-col sm:flex-row gap-2">
               <input type="file" accept="image/*" class="border rounded p-2 text-sm w-full" data-service-edit-file="${s.id}" />
-              <button class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-service-edit-upload="${s.id}">
-                Upload
+              <button type="button" class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-service-edit-upload="${s.id}">
+                Upload Image
               </button>
             </div>
           </div>

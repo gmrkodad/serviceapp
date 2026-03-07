@@ -62,7 +62,6 @@ const noResults = document.getElementById("no-results");
 const locationCity = document.getElementById("location-city");
 const locationApply = document.getElementById("location-apply");
 let allCategories = [];
-let activeSlideTimers = [];
 
 const imageByKeyword = {
   cleaning: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=1200&q=85",
@@ -99,15 +98,6 @@ const featuredCategoryNames = new Set([
   "Native Smart Locks",
 ]);
 
-const globalSlidePool = [
-  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=85",
-  "https://images.unsplash.com/photo-1616594039964-3a8f4ebf5e8e?auto=format&fit=crop&w=1200&q=85",
-  "https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=1200&q=85",
-  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=85",
-  "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1200&q=85",
-  "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1200&q=85",
-];
-
 function resolveCategoryImage(category) {
   if (category?.image_url) return category.image_url;
   const serviceImage = (category?.services || []).find((s) => s?.image_url)?.image_url;
@@ -126,43 +116,6 @@ function resolveCategoryImage(category) {
     }
   }
   return imageByKeyword.default;
-}
-
-function uniqueUrls(urls) {
-  const seen = new Set();
-  const out = [];
-  urls.forEach((url) => {
-    if (!url || seen.has(url)) return;
-    seen.add(url);
-    out.push(url);
-  });
-  return out;
-}
-
-function hashText(text) {
-  let h = 0;
-  const t = text || "";
-  for (let i = 0; i < t.length; i += 1) {
-    h = (h << 5) - h + t.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-function getCategoryImageSet(category) {
-  const categoryImage = category?.image_url || "";
-  const serviceImages = (category?.services || [])
-    .map((s) => s?.image_url || "")
-    .filter(Boolean)
-    .slice(0, 5);
-  const resolved = resolveCategoryImage(category);
-
-  const seed = hashText(category?.name || "");
-  const slide1 = globalSlidePool[seed % globalSlidePool.length];
-  const slide2 = globalSlidePool[(seed + 2) % globalSlidePool.length];
-
-  const slides = uniqueUrls([categoryImage, ...serviceImages, resolved, slide1, slide2]);
-  return slides.slice(0, 4);
 }
 
 async function reverseGeocodeCity(lat, lon) {
@@ -234,64 +187,17 @@ function createCategoryCard(cat, isFeatured, index) {
   mediaWrap.className =
     "relative aspect-square rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm";
 
-  const slides = getCategoryImageSet(cat);
-  const slideImages = [];
-  const dots = [];
-
-  slides.forEach((url, slideIndex) => {
-    const image = document.createElement("img");
-    image.className = "uc-card-img uc-slide-image group-hover:scale-[1.03]";
-    if (slideIndex === 0) image.classList.add("is-active");
-    image.loading = index < 6 ? "eager" : "lazy";
-    image.decoding = "async";
-    image.src = url;
-    image.alt = `${cat.name} service`;
-    image.referrerPolicy = "no-referrer";
-    image.addEventListener("error", () => {
-      image.src = imageByKeyword.default;
-    });
-    mediaWrap.appendChild(image);
-    slideImages.push(image);
+  const image = document.createElement("img");
+  image.className = "uc-card-img transition-transform duration-300 group-hover:scale-[1.03]";
+  image.loading = index < 6 ? "eager" : "lazy";
+  image.decoding = "async";
+  image.src = resolveCategoryImage(cat);
+  image.alt = `${cat.name} service`;
+  image.referrerPolicy = "no-referrer";
+  image.addEventListener("error", () => {
+    image.src = imageByKeyword.default;
   });
-
-  if (slides.length > 1) {
-    const dotsWrap = document.createElement("div");
-    dotsWrap.className =
-      "absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10";
-
-    slides.forEach((_, dotIndex) => {
-      const dot = document.createElement("button");
-      dot.type = "button";
-      dot.className = dotIndex === 0 ? "w-2 h-2 rounded-full bg-white" : "w-2 h-2 rounded-full bg-white/50";
-      dot.addEventListener("click", (evt) => {
-        evt.stopPropagation();
-        setSlide(dotIndex);
-      });
-      dotsWrap.appendChild(dot);
-      dots.push(dot);
-    });
-    mediaWrap.appendChild(dotsWrap);
-  }
-
-  let currentSlide = 0;
-  function setSlide(nextIndex) {
-    currentSlide = nextIndex;
-    slideImages.forEach((img, i) => {
-      img.classList.toggle("is-active", i === currentSlide);
-    });
-    dots.forEach((dot, i) => {
-      dot.className = i === currentSlide
-        ? "w-2 h-2 rounded-full bg-white"
-        : "w-2 h-2 rounded-full bg-white/50";
-    });
-  }
-
-  if (slides.length > 1) {
-    const timer = setInterval(() => {
-      setSlide((currentSlide + 1) % slides.length);
-    }, 2800 + (index % 3) * 400);
-    activeSlideTimers.push(timer);
-  }
+  mediaWrap.appendChild(image);
 
   if (isFeatured) {
     const badge = document.createElement("span");
@@ -312,8 +218,6 @@ function createCategoryCard(cat, isFeatured, index) {
 
 function renderCategories(query) {
   const q = normalize(query);
-  activeSlideTimers.forEach((timer) => clearInterval(timer));
-  activeSlideTimers = [];
   categoriesDiv.innerHTML = "";
 
   const filtered = allCategories.filter((cat) => {
