@@ -121,6 +121,12 @@
             <input class="border rounded p-2 text-sm" data-category-edit-name="${c.id}" placeholder="Category name" />
             <textarea class="border rounded p-2 text-sm" rows="2" data-category-edit-description="${c.id}" placeholder="Description"></textarea>
             <input class="border rounded p-2 text-sm" data-category-edit-image="${c.id}" placeholder="Image URL (https://...)" />
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="file" accept="image/*" class="border rounded p-2 text-sm w-full" data-category-edit-file="${c.id}" />
+              <button type="button" class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-category-edit-upload="${c.id}">
+                Upload Image
+              </button>
+            </div>
           </div>
           <div class="mt-2 flex items-center gap-2">
             <button class="text-xs px-3 py-1.5 rounded bg-slate-900 text-white" data-save-category-edit="${c.id}">
@@ -158,6 +164,7 @@
     bindCategoryEdits();
     bindCategoryEditSaves();
     bindCategoryEditCancels();
+    bindCategoryImageUploads();
     bindCategoryDeletes();
   }
 
@@ -292,8 +299,20 @@
         const id = btn.getAttribute("data-save-category-edit");
         const name = document.querySelector(`[data-category-edit-name="${id}"]`)?.value?.trim() || "";
         const description = document.querySelector(`[data-category-edit-description="${id}"]`)?.value || "";
-        const image_url = document.querySelector(`[data-category-edit-image="${id}"]`)?.value?.trim() || "";
+        let image_url = document.querySelector(`[data-category-edit-image="${id}"]`)?.value?.trim() || "";
+        const selectedFile = document.querySelector(`[data-category-edit-file="${id}"]`)?.files?.[0];
         if (!name) return;
+        if (!image_url && selectedFile) {
+          try {
+            image_url = (await uploadImageFile(selectedFile)) || "";
+            const input = document.querySelector(`[data-category-edit-image="${id}"]`);
+            if (input) input.value = image_url;
+          } catch (err) {
+            categoryError.textContent = err.message || "Image upload failed";
+            categoryError.classList.remove("hidden");
+            return;
+          }
+        }
 
         await authFetch(`/api/services/admin/categories/${id}/`, {
           method: "PUT",
@@ -311,6 +330,37 @@
         const id = btn.getAttribute("data-cancel-category-edit");
         const form = document.querySelector(`[data-category-edit-form="${id}"]`);
         if (form) form.classList.add("hidden");
+      });
+    });
+  }
+
+  function bindCategoryImageUploads() {
+    document.querySelectorAll("[data-category-edit-upload]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        categoryError.classList.add("hidden");
+        const id = btn.getAttribute("data-category-edit-upload");
+        const fileInput = document.querySelector(`[data-category-edit-file="${id}"]`);
+        const imageInput = document.querySelector(`[data-category-edit-image="${id}"]`);
+        const file = fileInput?.files?.[0];
+        if (!file) {
+          categoryError.textContent = "Please choose an image file first";
+          categoryError.classList.remove("hidden");
+          return;
+        }
+
+        btn.disabled = true;
+        const oldLabel = btn.textContent;
+        btn.textContent = "Uploading...";
+        try {
+          const url = await uploadImageFile(file);
+          if (url && imageInput) imageInput.value = url;
+        } catch (err) {
+          categoryError.textContent = err.message || "Image upload failed";
+          categoryError.classList.remove("hidden");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldLabel;
+        }
       });
     });
   }
