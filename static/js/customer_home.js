@@ -232,7 +232,7 @@ function createCategoryCard(cat, isFeatured, index) {
 
   const mediaWrap = document.createElement("div");
   mediaWrap.className =
-    "relative rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm";
+    "relative aspect-square rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm";
 
   const slides = getCategoryImageSet(cat);
   const slideImages = [];
