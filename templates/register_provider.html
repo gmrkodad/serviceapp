@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Provider Registration</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  {% load static %}
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
@@ -129,6 +130,6 @@
     </button>
   </form>
 
-  <script src="/static/js/register_provider.js"></script>
+  <script src="{% static 'js/register_provider.js' %}?v=3"></script>
 </body>
 </html>
