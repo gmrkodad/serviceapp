@@ -8,6 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body { max-width: 100%; overflow-x: hidden; }
+    .app-brand {
+      background: linear-gradient(90deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   </style>
 </head>
 
@@ -19,7 +25,7 @@
   <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
 
     <!-- Logo -->
-    <a id="nav-home-link" href="/" class="text-xl sm:text-2xl font-bold text-blue-600">
+    <a id="nav-home-link" href="/" class="text-xl sm:text-2xl font-extrabold tracking-tight app-brand">
       ServiceApp
     </a>
 
@@ -28,8 +34,11 @@
 
       <!-- Notifications -->
       <div class="relative">
-        <button id="notif-bell" class="relative text-xl">
-          🔔
+        <button id="notif-bell" class="relative rounded-xl p-2 text-slate-600 hover:bg-slate-100 transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5"></path>
+            <path d="M10 17a2 2 0 104 0"></path>
+          </svg>
           <span
             id="notif-count"
             class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
@@ -48,7 +57,7 @@
 
           <button
             id="mark-all"
-            class="w-full text-sm text-blue-600 p-2 border-t hover:bg-gray-50">
+            class="w-full text-sm text-teal-700 p-2 border-t hover:bg-gray-50">
             Mark all as read
           </button>
         </div>
@@ -58,12 +67,17 @@
       <div class="relative">
         <button
           id="profile-menu-btn"
-          class="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 shadow-sm hover:shadow transition"
+          class="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-emerald-50/60 px-2 py-1.5 text-sm text-slate-700 shadow-sm hover:shadow-md transition"
           aria-haspopup="true"
           aria-expanded="false">
-          <span id="nav-avatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-semibold flex items-center justify-center">A</span>
-          <span class="hidden sm:block text-sm font-medium pr-1" id="nav-username">Account</span>
-          <span class="text-xs text-slate-500 pr-1">▾</span>
+          <span id="nav-avatar" class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white text-xs font-semibold flex items-center justify-center">A</span>
+          <span class="hidden sm:flex items-center gap-2 pr-0.5">
+            <span class="text-sm font-semibold text-slate-800" id="nav-username">Account</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          </span>
+          <svg viewBox="0 0 24 24" class="w-4 h-4 text-slate-500 pr-0.5" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
         </button>
 
         <div
@@ -103,7 +117,7 @@
   <button
     id="back-btn"
     class="mb-6 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
-    ← Back
+    &larr; Back
   </button>
   {% block content %}{% endblock %}
 </main>
