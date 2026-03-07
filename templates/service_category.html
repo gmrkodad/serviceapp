@@ -3,73 +3,94 @@
 
 {% block content %}
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-  .svc-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+  .svc-font { font-family: 'Manrope', ui-sans-serif, system-ui; }
+  .svc-hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #d6e2ff;
+    border-radius: 26px;
+    background: linear-gradient(120deg, #2154d9 0%, #4258e8 55%, #7a63ff 100%);
+    color: #fff;
+  }
+  .svc-hero-image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.2;
+  }
+  .svc-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(6,20,64,0.76), rgba(40,77,212,0.52));
+  }
 </style>
-<div class="svc-font relative overflow-hidden rounded-3xl border border-blue-300 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 text-white px-6 py-7 md:px-8 md:py-9 mb-8 shadow-lg">
-  <div class="absolute -top-16 -right-16 h-52 w-52 rounded-full bg-white/15 blur-2xl"></div>
-  <div class="absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-cyan-200/20 blur-2xl"></div>
-  <div class="relative flex items-center gap-4">
-    <div
-      id="category-icon"
-      class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-3xl border border-white/20"
-    >
-      ?
-    </div>
-    <div>
-      <h1 id="category-title" class="text-3xl md:text-4xl font-bold tracking-tight">
-        Services
-      </h1>
-      <p class="text-blue-100 mt-1">
-        Trusted professionals, transparent pricing, smooth booking
-      </p>
+<section class="svc-font">
+  <div class="svc-hero px-6 py-7 md:px-8 md:py-10 mb-7 shadow-lg">
+    <div id="category-hero-image" class="svc-hero-image"></div>
+    <div class="svc-hero-overlay"></div>
+    <div class="absolute -top-16 -right-14 h-56 w-56 rounded-full bg-white/20 blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-cyan-200/20 blur-3xl"></div>
+    <div class="relative flex items-center gap-4">
+      <div
+        id="category-icon"
+        class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-3xl border border-white/20"
+      >
+        ?
+      </div>
+      <div>
+        <h1 id="category-title" class="text-3xl md:text-4xl font-bold tracking-tight">Services</h1>
+        <p id="category-subtitle" class="text-blue-100 mt-1">
+          Pick a service card to view the best professionals nearby
+        </p>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="svc-font grid grid-cols-1 xl:grid-cols-12 gap-6">
-  <section class="xl:col-span-4">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold text-slate-900">Services</h2>
-        <span class="text-xs text-slate-500 uppercase tracking-widest">Select</span>
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+    <section class="xl:col-span-5">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold text-slate-900">Services</h2>
+          <span class="text-xs text-slate-500 uppercase tracking-widest">Select One</span>
+        </div>
+        <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </div>
-      <ul id="services-list" class="rounded-xl border border-slate-200 divide-y"></ul>
-    </div>
-  </section>
+    </section>
 
-  <section class="xl:col-span-8">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <h2 class="text-lg font-semibold text-slate-900">
-          Available Professionals
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto">
-          <select id="provider-sort" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-            <option value="">Sort</option>
-            <option value="price_asc">Lowest price</option>
-            <option value="price_desc">Highest price</option>
-            <option value="rating_desc">Highest rating</option>
-          </select>
-          <select id="provider-min-rating" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
-            <option value="">Min rating</option>
-            <option value="4.5">4.5+</option>
-            <option value="4">4.0+</option>
-            <option value="3.5">3.5+</option>
-            <option value="3">3.0+</option>
-          </select>
-          <input id="provider-max-price" type="number" min="1" placeholder="Max price" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+    <section class="xl:col-span-7">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4">
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <h2 class="text-lg font-semibold text-slate-900">Available Professionals</h2>
+            <p id="selected-service-label" class="text-sm text-slate-500">Select a service</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+            <select id="provider-sort" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Sort</option>
+              <option value="price_asc">Lowest price</option>
+              <option value="price_desc">Highest price</option>
+              <option value="rating_desc">Highest rating</option>
+            </select>
+            <select id="provider-min-rating" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+              <option value="">Min rating</option>
+              <option value="4.5">4.5+</option>
+              <option value="4">4.0+</option>
+              <option value="3.5">3.5+</option>
+              <option value="3">3.0+</option>
+            </select>
+            <input id="provider-max-price" type="number" min="1" placeholder="Max price" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="providers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      <div id="providers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
-    <p id="empty" class="hidden text-slate-500 mt-4">
-      No providers available
-    </p>
-  </section>
-</div>
+      <p id="empty" class="hidden text-slate-500 mt-4">No providers available for this service.</p>
+    </section>
+  </div>
+</section>
 
 <script src="{% static 'js/service_category.js' %}?v=2"></script>
 {% endblock %}

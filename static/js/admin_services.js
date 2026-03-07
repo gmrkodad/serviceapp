@@ -302,7 +302,7 @@
         let image_url = document.querySelector(`[data-category-edit-image="${id}"]`)?.value?.trim() || "";
         const selectedFile = document.querySelector(`[data-category-edit-file="${id}"]`)?.files?.[0];
         if (!name) return;
-        if (!image_url && selectedFile) {
+        if (selectedFile) {
           try {
             image_url = (await uploadImageFile(selectedFile)) || "";
             const input = document.querySelector(`[data-category-edit-image="${id}"]`);
@@ -414,8 +414,20 @@
         const name = document.querySelector(`[data-service-edit-name="${id}"]`)?.value?.trim() || "";
         const description = document.querySelector(`[data-service-edit-description="${id}"]`)?.value || "";
         const base_price = document.querySelector(`[data-service-edit-price="${id}"]`)?.value || "";
-        const image_url = document.querySelector(`[data-service-edit-image="${id}"]`)?.value?.trim() || "";
+        let image_url = document.querySelector(`[data-service-edit-image="${id}"]`)?.value?.trim() || "";
+        const selectedFile = document.querySelector(`[data-service-edit-file="${id}"]`)?.files?.[0];
         if (!name || !base_price) return;
+        if (selectedFile) {
+          try {
+            image_url = (await uploadImageFile(selectedFile)) || "";
+            const input = document.querySelector(`[data-service-edit-image="${id}"]`);
+            if (input) input.value = image_url;
+          } catch (err) {
+            serviceError.textContent = err.message || "Image upload failed";
+            serviceError.classList.remove("hidden");
+            return;
+          }
+        }
 
         await authFetch(`/api/services/admin/services/${id}/`, {
           method: "PUT",
@@ -543,7 +555,7 @@
       const is_active = document.getElementById("service-active").checked;
 
       const selectedFile = serviceImageFile?.files?.[0];
-      if (!image_url && selectedFile) {
+      if (selectedFile) {
         try {
           image_url = (await uploadImageFile(selectedFile)) || "";
           if (serviceImageUrlInput) {

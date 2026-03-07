@@ -31,5 +31,6 @@ urlpatterns = [
     path("", include("frontend.urls")),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Temporary production media serving so uploaded category/service images render.
+# For long-term reliability on Railway, migrate media to object storage (S3/Cloudinary).
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
