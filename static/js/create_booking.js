@@ -183,8 +183,20 @@ form.addEventListener("submit", async (e) => {
   errorEl.classList.add("hidden");
   successEl.classList.add("hidden");
 
-  const lines = [addressInput.value.trim()];
-  if (customerLocationInput.value.trim()) lines.push(`Customer location: ${customerLocationInput.value.trim()}`);
+  const addressValue = addressInput.value.trim();
+  const customerLocationValue = customerLocationInput.value.trim();
+  const normalize = (v) => (v || "").toLowerCase().replace(/\s+/g, " ").trim();
+
+  const lines = [addressValue];
+  // Avoid duplicate location details when address already includes same location/city.
+  if (
+    customerLocationValue &&
+    normalize(customerLocationValue) !== normalize(addressValue) &&
+    !normalize(addressValue).includes(normalize(customerLocationValue)) &&
+    !normalize(customerLocationValue).includes(normalize(addressValue))
+  ) {
+    lines.push(`Customer location: ${customerLocationValue}`);
+  }
   if (landmarkInput.value.trim()) lines.push(`Landmark: ${landmarkInput.value.trim()}`);
   if (notesInput.value.trim()) lines.push(`Notes: ${notesInput.value.trim()}`);
 

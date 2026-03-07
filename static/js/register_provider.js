@@ -86,21 +86,21 @@ async function detectCityByBrowser() {
   if (!pos) return "";
 
   const accuracy = Math.round(pos.coords.accuracy || 0);
-  if (accuracy > 150) {
-    if (cityInfoEl) {
-      cityInfoEl.textContent = `Low accuracy (${accuracy}m). Move near window and retry.`;
-      cityInfoEl.classList.remove("hidden");
-    }
-    return "";
-  }
+  const lowAccuracy = accuracy > 150;
 
   const { latitude, longitude } = pos.coords;
   const cityName = await reverseGeocodeCity(latitude, longitude);
   if (cityInfoEl) {
     cityInfoEl.textContent = cityName
-      ? `Detected city: ${cityName}`
+      ? (lowAccuracy
+          ? `Detected city: ${cityName} (low GPS accuracy: ${accuracy}m)`
+          : `Detected city: ${cityName}`)
       : "Could not detect city. Enter manually.";
     cityInfoEl.classList.remove("hidden");
+  }
+  if (cityName) {
+    localStorage.setItem("location_city", cityName);
+    localStorage.setItem("location_source", "browser");
   }
   return cityName || "";
 }
@@ -121,6 +121,16 @@ if (useCurrentCityBtn) {
 document.addEventListener("DOMContentLoaded", async () => {
   const cityInput = document.getElementById("city");
   if (!cityInput) return;
+
+  const storedCity = (localStorage.getItem("location_city") || "").trim();
+  if (storedCity && !cityInput.value) {
+    cityInput.value = storedCity;
+    if (cityInfoEl) {
+      cityInfoEl.textContent = `Using saved city: ${storedCity}`;
+      cityInfoEl.classList.remove("hidden");
+    }
+    return;
+  }
 
   const browserCity = await detectCityByBrowser();
   if (browserCity && !cityInput.value) {

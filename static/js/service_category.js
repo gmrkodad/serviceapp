@@ -69,7 +69,7 @@ let providersCache = [];
 
 const ICONS = {
   "Home Cleaning": {
-    bg: "from-cyan-100 to-blue-100",
+    bg: "from-slate-100 to-zinc-100",
     icon: `<path d="M3 11l9-8 9 8M5 10v10h14V10" /><path d="M9 20v-6h6v6" />`,
   },
   Plumbing: {
@@ -81,7 +81,7 @@ const ICONS = {
     icon: `<path d="M13 2L6 13h5l-1 9 8-12h-5l0-8z" />`,
   },
   "AC Repair": {
-    bg: "from-blue-100 to-indigo-100",
+    bg: "from-slate-100 to-zinc-200",
     icon: `<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1L19.1 4.9" />`,
   },
   Beauty: {
@@ -105,7 +105,7 @@ const ICONS = {
     icon: `<path d="M3 21l9-9m0 0l2-2 5 5-2 2m-5-5L8 8l2-2 4 4" />`,
   },
   "Water Purifier": {
-    bg: "from-cyan-100 to-sky-100",
+    bg: "from-slate-100 to-zinc-100",
     icon: `<path d="M12 2v20M7 7h10M7 17h10M5 12h14" />`,
   },
   Default: {
@@ -166,14 +166,14 @@ function renderServices() {
     card.className =
       "cursor-pointer rounded-2xl overflow-hidden border transition-all " +
       (selected
-        ? "border-blue-400 shadow-md ring-2 ring-blue-100"
-        : "border-slate-200 hover:border-blue-200 hover:shadow-sm");
+        ? "border-slate-700 shadow-md ring-2 ring-slate-200"
+        : "border-slate-200 hover:border-slate-400 hover:shadow-sm");
 
     const image = resolveImage(service, activeCategory);
     card.innerHTML = `
       <div class="aspect-[4/3] relative bg-slate-100">
         <img src="${image}" alt="${service.name}" class="w-full h-full object-cover" loading="lazy" referrerpolicy="no-referrer" />
-        ${selected ? '<span class="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded-full bg-white text-blue-700">Selected</span>' : ""}
+        ${selected ? '<span class="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded-full bg-white text-slate-800">Selected</span>' : ""}
       </div>
       <div class="p-3">
         <p class="font-semibold text-slate-900">${service.name}</p>
@@ -239,7 +239,7 @@ function renderProviders() {
     card.innerHTML = `
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-semibold">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-800 to-black text-white flex items-center justify-center font-semibold">
             ${initials || "P"}
           </div>
           <div class="min-w-0">

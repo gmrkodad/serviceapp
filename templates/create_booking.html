@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-8">
-  <div class="rounded-3xl bg-gradient-to-r from-indigo-600 to-blue-500 text-white p-6 mb-8 shadow">
-    <p class="uppercase tracking-[0.2em] text-xs text-blue-100">Booking</p>
-    <h1 class="text-3xl font-bold mt-1">Confirm Your Service</h1>
-    <p class="text-blue-100 mt-2">Pick date, add address, and place your booking.</p>
+  <div class="rounded-3xl border border-slate-800 bg-gradient-to-r from-black via-slate-900 to-slate-800 text-white p-6 md:p-8 mb-8 shadow-xl">
+    <p class="uppercase tracking-[0.25em] text-[11px] text-slate-300">Booking</p>
+    <h1 class="text-3xl md:text-4xl font-extrabold mt-2 tracking-tight">Confirm Your Service</h1>
+    <p class="text-slate-300 mt-2">Pick schedule, verify address, and place your booking in one step.</p>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white rounded-2xl shadow border border-slate-100 p-6">
-      <h2 class="text-xl font-semibold mb-5">Booking Details</h2>
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-semibold">Booking Details</h2>
+        <span class="text-xs px-2.5 py-1 rounded-full border border-slate-300 text-slate-700 bg-slate-50">Secure Checkout</span>
+      </div>
 
       <form id="booking-form" class="space-y-5">
         <div>
@@ -17,7 +20,7 @@
           <input
             type="date"
             id="date"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
             required
           />
         </div>
@@ -27,7 +30,7 @@
           <textarea
             id="address"
             rows="3"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
             placeholder="House number, street, area"
             required
           ></textarea>
@@ -39,7 +42,7 @@
             <button
               type="button"
               id="use-current-location"
-              class="text-xs px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50"
+              class="text-xs px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-100 transition"
             >
               Use Current Location
             </button>
@@ -57,7 +60,7 @@
           <label for="time-slot" class="block text-sm font-medium text-slate-700 mb-2">Preferred Time Slot</label>
           <select
             id="time-slot"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
             required
           >
             <option value="MORNING">Morning (8 AM - 12 PM)</option>
@@ -71,7 +74,7 @@
           <input
             type="text"
             id="landmark"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
             placeholder="Near metro station, mall, etc."
           />
         </div>
@@ -81,7 +84,7 @@
           <textarea
             id="notes"
             rows="3"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none"
+            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
             placeholder="Anything the professional should know"
           ></textarea>
         </div>
@@ -89,16 +92,18 @@
         <p id="error" class="text-red-600 text-sm hidden"></p>
         <p id="success" class="text-emerald-600 text-sm hidden"></p>
 
-        <button
-          id="submit-booking"
-          class="w-full sm:w-auto bg-slate-900 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          Confirm Booking
-        </button>
+        <div class="pt-2">
+          <button
+            id="submit-booking"
+            class="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition disabled:opacity-60 disabled:cursor-not-allowed font-semibold"
+          >
+            Confirm Booking
+          </button>
+        </div>
       </form>
     </div>
 
-    <aside class="bg-white rounded-2xl shadow border border-slate-100 p-6 h-fit">
+    <aside class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 h-fit">
       <h3 class="text-lg font-semibold mb-4">Selected Service</h3>
       <div class="space-y-2 text-sm">
         <p><span class="text-slate-500">Service:</span> <span id="selected-service-name" class="font-medium text-slate-800">Loading...</span></p>
@@ -108,7 +113,7 @@
         <p><span class="text-slate-500">Location:</span> <span id="selected-provider-location" class="font-medium text-slate-800">-</span></p>
       </div>
 
-      <hr class="my-5" />
+      <hr class="my-5 border-slate-200" />
 
       <h4 class="text-sm font-semibold text-slate-800 mb-2">Tips</h4>
       <ul class="text-sm text-slate-600 space-y-1 list-disc pl-5">
