@@ -124,10 +124,13 @@ function getActionButtons(b) {
 }
 
 function renderBookingCard(b) {
+  const bookingServiceLabel = Array.isArray(b.service_names) && b.service_names.length
+    ? b.service_names.join(", ")
+    : b.service_name;
   return `
     <div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm">
       <div class="flex items-center justify-between mb-2">
-        <p class="font-semibold text-slate-900">#${b.id} â€¢ ${b.service_name}</p>
+        <p class="font-semibold text-slate-900">#${b.id} • ${bookingServiceLabel}</p>
         ${statusPill(b.status)}
       </div>
       <p class="text-sm"><strong>Customer:</strong> ${b.customer_username}</p>
@@ -164,14 +167,15 @@ function renderOverviewSection() {
   if (!recent.length) {
     if (overviewEmpty) overviewEmpty.classList.remove("hidden");
     return;
-  }
-
-  recent.forEach((b) => {
+  }  recent.forEach((b) => {
+    const bookingServiceLabel = Array.isArray(b.service_names) && b.service_names.length
+      ? b.service_names.join(", ")
+      : b.service_name;
     const row = document.createElement("div");
     row.className = "rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-start justify-between gap-3";
     row.innerHTML = `
       <div>
-        <p class="font-medium text-slate-900">#${b.id} â€¢ ${b.service_name}</p>
+        <p class="font-medium text-slate-900">#${b.id} • ${bookingServiceLabel}</p>
         <p class="text-sm text-slate-600">${b.customer_username} | ${b.scheduled_date} | ${formatTimeSlot(b.time_slot)}</p>
       </div>
       ${statusPill(b.status)}
@@ -470,3 +474,6 @@ function updateStatus(id, status) {
     body: JSON.stringify({ status }),
   }).then(() => loadBookings());
 }
+
+
+

@@ -12,6 +12,9 @@ const timeSlotInput = document.getElementById("time-slot");
 const landmarkInput = document.getElementById("landmark");
 const notesInput = document.getElementById("notes");
 const submitBtn = document.getElementById("submit-booking");
+const additionalServicesWrap = document.getElementById("additional-services-wrap");
+const selectedServicesCountEl = document.getElementById("selected-services-count");
+const servicesSelectErrorEl = document.getElementById("services-select-error");
 
 const selectedServiceNameEl = document.getElementById("selected-service-name");
 const selectedProviderNameEl = document.getElementById("selected-provider-name");
@@ -21,6 +24,7 @@ const selectedProviderLocationEl = document.getElementById("selected-provider-lo
 
 const serviceId = Number(localStorage.getItem("selectedService"));
 const providerId = Number(localStorage.getItem("selectedProvider"));
+const selectedServiceIds = new Set(serviceId ? [serviceId] : []);
 
 if (!serviceId || !providerId) {
   errorEl.textContent = "Service or provider not selected. Please choose again.";
@@ -176,12 +180,85 @@ async function loadBookingSummary() {
   }
 }
 
+async function loadProviderServicesForSelection() {
+  if (!providerId || !additionalServicesWrap) return;
+
+  additionalServicesWrap.innerHTML = "<p class='text-sm text-slate-500'>Loading services...</p>";
+  const res = await fetch(`/api/bookings/provider-services/${providerId}/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    additionalServicesWrap.innerHTML = "<p class='text-sm text-slate-500'>Unable to load provider services.</p>";
+    return;
+  }
+
+  const services = await res.json();
+  additionalServicesWrap.innerHTML = "";
+
+  if (!Array.isArray(services) || !services.length) {
+    additionalServicesWrap.innerHTML = "<p class='text-sm text-slate-500'>No services available.</p>";
+    return;
+  }
+
+  services.forEach((svc) => {
+    const checked = selectedServiceIds.has(svc.id);
+    const row = document.createElement("label");
+    row.className =
+      "flex items-start gap-2 rounded-lg border border-slate-200 bg-white p-2.5 cursor-pointer hover:border-slate-300 transition";
+    row.innerHTML = `
+      <input type="checkbox" data-book-service-id="${svc.id}" class="mt-1 accent-black" ${checked ? "checked" : ""} />
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-slate-900">${svc.name}</p>
+        <p class="text-xs text-slate-500">Price: Rs.${svc.price ?? svc.base_price ?? "N/A"}</p>
+      </div>
+    `;
+    additionalServicesWrap.appendChild(row);
+  });
+
+  additionalServicesWrap.querySelectorAll("input[data-book-service-id]").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const id = Number(cb.getAttribute("data-book-service-id"));
+      if (cb.checked) {
+        selectedServiceIds.add(id);
+      } else {
+        selectedServiceIds.delete(id);
+      }
+
+      if (!selectedServiceIds.has(serviceId)) {
+        selectedServiceIds.add(serviceId);
+        const primaryCb = additionalServicesWrap.querySelector(
+          `input[data-book-service-id="${serviceId}"]`
+        );
+        if (primaryCb) primaryCb.checked = true;
+      }
+      updateSelectedServicesCount();
+    });
+  });
+
+  updateSelectedServicesCount();
+}
+
+function updateSelectedServicesCount() {
+  if (!selectedServicesCountEl) return;
+  selectedServicesCountEl.textContent = `${selectedServiceIds.size} selected`;
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!serviceId || !providerId) return;
 
   errorEl.classList.add("hidden");
   successEl.classList.add("hidden");
+  if (servicesSelectErrorEl) servicesSelectErrorEl.classList.add("hidden");
+
+  if (!selectedServiceIds.size) {
+    if (servicesSelectErrorEl) {
+      servicesSelectErrorEl.textContent = "Select at least one service.";
+      servicesSelectErrorEl.classList.remove("hidden");
+    }
+    return;
+  }
 
   const addressValue = addressInput.value.trim();
   const customerLocationValue = customerLocationInput.value.trim();
@@ -202,6 +279,7 @@ form.addEventListener("submit", async (e) => {
 
   const payload = {
     service: serviceId,
+    service_ids: Array.from(selectedServiceIds),
     provider: providerId,
     scheduled_date: dateInput.value,
     time_slot: timeSlotInput.value,
@@ -257,3 +335,4 @@ form.addEventListener("submit", async (e) => {
 });
 
 loadBookingSummary();
+loadProviderServicesForSelection();

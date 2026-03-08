@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     CreateBookingAPIView,
+    ProviderServicesForBookingAPIView,
     CustomerBookingsAPIView,
     AdminBookingsAPIView,
     AssignProviderAPIView,      
@@ -13,6 +14,7 @@ from .views import (
 
 urlpatterns = [
     path("create/", CreateBookingAPIView.as_view()),
+    path("provider-services/<int:provider_id>/", ProviderServicesForBookingAPIView.as_view()),
     path("my/", CustomerBookingsAPIView.as_view()),
     path("admin/all/", AdminBookingsAPIView.as_view()),
     path("assign/<int:booking_id>/", AssignProviderAPIView.as_view()),

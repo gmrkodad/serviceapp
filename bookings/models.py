@@ -35,6 +35,11 @@ class Booking(models.Model):
     )
 
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    additional_services = models.ManyToManyField(
+        Service,
+        blank=True,
+        related_name="extra_service_bookings",
+    )
     address = models.TextField()
     scheduled_date = models.DateField()
     time_slot = models.CharField(

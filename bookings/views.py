@@ -12,6 +12,8 @@ from accounts.permissions import IsAdmin
 from accounts.models import User
 from accounts.permissions import IsProvider
 from accounts.models import ProviderProfile, Notification
+from accounts.models import ProviderServicePrice
+from services.models import Service
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -277,6 +279,35 @@ class CreateReviewAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProviderServicesForBookingAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, provider_id):
+        try:
+            profile = ProviderProfile.objects.select_related("user").get(user_id=provider_id)
+        except ProviderProfile.DoesNotExist:
+            return Response({"error": "Provider not found"}, status=404)
+
+        services = profile.services.filter(is_active=True).order_by("name")
+        price_map = {
+            row["service_id"]: float(row["price"])
+            for row in ProviderServicePrice.objects.filter(provider_profile=profile).values("service_id", "price")
+        }
+
+        data = [
+            {
+                "id": svc.id,
+                "name": svc.name,
+                "description": svc.description,
+                "image_url": svc.image_url,
+                "base_price": float(svc.base_price),
+                "price": price_map.get(svc.id),
+            }
+            for svc in services
+        ]
+        return Response(data)
 
 
 class AdminReviewListAPIView(APIView):

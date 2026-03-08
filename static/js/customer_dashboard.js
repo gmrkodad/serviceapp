@@ -66,6 +66,9 @@ fetch("/api/bookings/my/", {
     }
 
     bookings.forEach((b) => {
+      const bookingServiceLabel = Array.isArray(b.service_names) && b.service_names.length
+        ? b.service_names.join(", ")
+        : b.service_name;
       const card = document.createElement("div");
       card.className = "border p-4 rounded shadow bg-white";
 
@@ -104,7 +107,7 @@ fetch("/api/bookings/my/", {
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-semibold">
             #${b.id} •
-            ${b.category} - ${b.service_name}
+            ${b.category} - ${bookingServiceLabel}
           </h3>
           ${statusBadge(b.status)}
         </div>
