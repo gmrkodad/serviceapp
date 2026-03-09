@@ -16,8 +16,8 @@
   --teal: #0f766e;
   --danger: #dc2626;
   --success: #047857;
-  --shadow-lg: 0 30px 80px rgba(18, 26, 34, 0.12);
-  --shadow-md: 0 18px 40px rgba(18, 26, 34, 0.08);
+  --shadow-lg: 0 20px 48px rgba(18, 26, 34, 0.1);
+  --shadow-md: 0 12px 28px rgba(18, 26, 34, 0.07);
   --radius-xl: 32px;
   --radius-lg: 24px;
   --radius-md: 18px;
@@ -48,11 +48,10 @@ body {
 body::before,
 body::after {
   content: "";
-  position: fixed;
+  position: absolute;
   z-index: -1;
   border-radius: 999px;
-  filter: blur(24px);
-  opacity: 0.55;
+  opacity: 0.42;
   pointer-events: none;
 }
 
@@ -93,7 +92,6 @@ body::after {
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(255, 250, 243, 0.82), rgba(255, 255, 255, 0.78));
-  backdrop-filter: blur(16px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -117,7 +115,6 @@ body::after {
   height: 240px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
-  filter: blur(8px);
 }
 
 .section-card,
@@ -127,7 +124,6 @@ body::after {
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(14px);
 }
 
 .auth-shell {
@@ -166,7 +162,6 @@ h3 {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.08);
   padding: 18px;
-  backdrop-filter: blur(8px);
 }
 
 .auth-card {
@@ -227,6 +222,7 @@ h3 {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  border: 1px solid transparent;
   border-radius: 18px;
   padding: 13px 18px;
   font-weight: 700;
@@ -284,7 +280,6 @@ h3 {
   border-radius: 24px;
   background: rgba(255, 250, 243, 0.72);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(20px);
 }
 
 .brand-wordmark {
