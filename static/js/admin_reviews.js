@@ -65,8 +65,7 @@
       return;
     }
 
-    const reviews = await res.json();
-    reviewsCache = reviews || [];
+    reviewsCache = (await res.json()) || [];
     renderReviews();
   }
 
@@ -102,7 +101,7 @@
         </svg>
       `;
       let out = "";
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= 5; i += 1) {
         out += starSvg(i <= rating);
       }
       return out;
@@ -110,21 +109,19 @@
 
     filtered.forEach((r) => {
       const card = document.createElement("div");
-      card.className = "bg-white/80 rounded-2xl border border-slate-100 p-4 shadow-sm";
-
-      const stars = renderStars(r.rating);
-
+      card.className = "page-shell content-inset";
       card.innerHTML = `
-        <div class="flex items-center justify-between">
+        <div class="flex items-start justify-between gap-4">
           <div>
-            <p class="font-semibold">${r.service_name}</p>
-            <p class="text-xs text-slate-500">Booking #${r.booking_id}</p>
+            <p class="section-title text-xl font-bold text-slate-900">${r.service_name}</p>
+            <p class="mt-1 text-sm text-slate-500">Booking #${r.booking_id}</p>
           </div>
-          <div class="leading-none">${stars}</div>
+          <div class="leading-none">${renderStars(r.rating)}</div>
         </div>
-        <p class="text-sm text-slate-600 mt-2">${r.comment || "No comment"}</p>
-        <div class="text-xs text-slate-500 mt-3">
-          Author: ${r.author_username} | Provider: ${r.provider_username || "-"}
+        <p class="mt-4 text-sm leading-6 text-slate-600">${r.comment || "No comment"}</p>
+        <div class="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
+          <span class="soft-chip bg-slate-100 text-slate-700">Author: ${r.author_username}</span>
+          <span class="soft-chip bg-slate-100 text-slate-700">Provider: ${r.provider_username || "-"}</span>
         </div>
       `;
 

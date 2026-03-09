@@ -61,15 +61,15 @@
 
   function statusBadge(status) {
     const colors = {
-      PENDING: "bg-yellow-100 text-yellow-800",
-      ASSIGNED: "bg-blue-100 text-blue-800",
-      CONFIRMED: "bg-green-100 text-green-800",
-      IN_PROGRESS: "bg-purple-100 text-purple-800",
-      COMPLETED: "bg-emerald-100 text-emerald-800",
-      CANCELLED: "bg-red-100 text-red-800",
+      PENDING: "bg-amber-50 text-amber-800 border-amber-200",
+      ASSIGNED: "bg-sky-50 text-sky-800 border-sky-200",
+      CONFIRMED: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      IN_PROGRESS: "bg-indigo-50 text-indigo-800 border-indigo-200",
+      COMPLETED: "bg-slate-100 text-slate-700 border-slate-200",
+      CANCELLED: "bg-rose-50 text-rose-700 border-rose-200",
     };
 
-    return `<span class="px-2 py-1 rounded text-xs ${colors[status] || "bg-gray-100"}">${status.replace("_", " ")}</span>`;
+    return `<span class="inline-flex rounded-full border px-3 py-1 text-xs font-bold ${colors[status] || "bg-slate-100 text-slate-700 border-slate-200"}">${status.replace("_", " ")}</span>`;
   }
 
   async function loadData() {
@@ -84,12 +84,10 @@
         return;
       }
 
-      const bookings = await bookingsRes.json();
-      const providers = await providersRes.json();
-      bookingsCache = bookings || [];
-      providersCache = providers || [];
+      bookingsCache = (await bookingsRes.json()) || [];
+      providersCache = (await providersRes.json()) || [];
       renderBookings();
-    } catch {
+    } catch (_) {
       // ignore
     }
   }
@@ -107,8 +105,7 @@
         (b.customer_username || "").toLowerCase().includes(q) ||
         (b.provider_username || "").toLowerCase().includes(q);
       const matchStatus = !status || b.status === status;
-      const matchProvider =
-        !providerQ || (b.provider_username || "").toLowerCase().includes(providerQ);
+      const matchProvider = !providerQ || (b.provider_username || "").toLowerCase().includes(providerQ);
       return matchSearch && matchStatus && matchProvider;
     });
 
@@ -122,32 +119,29 @@
 
     filtered.forEach((b) => {
       const tr = document.createElement("tr");
-      tr.className = "border-b";
-
       const providerOptions = providersCache
-          .map((p) => `<option value="${p.id}">${p.username}</option>`)
-          .join("");
+        .map((p) => `<option value="${p.id}">${p.username}</option>`)
+        .join("");
 
-        const providerCell = b.provider_username
-          ? `<span>${b.provider_username}</span>`
-          : `<select class="border rounded p-1 text-sm" data-provider-select="${b.id}">
-              <option value="">Select</option>
-              ${providerOptions}
-            </select>`;
+      const providerCell = b.provider_username
+        ? `<span class="font-semibold text-slate-900">${b.provider_username}</span>`
+        : `<select class="select-modern text-sm" data-provider-select="${b.id}">
+            <option value="">Select provider</option>
+            ${providerOptions}
+          </select>`;
 
-        const actionCell = b.provider_username
-          ? "-"
-          : `<button class="bg-slate-900 text-white px-3 py-1 rounded text-xs" data-assign-btn="${b.id}">Assign</button>`;
+      const actionCell = b.provider_username
+        ? `<span class="text-sm text-slate-500">Assigned</span>`
+        : `<button class="btn-primary px-4 py-2 text-xs" data-assign-btn="${b.id}">Assign</button>`;
 
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-semibold text-slate-700">#${b.id}</td>
-          <td class="py-3 px-4">${b.service_name}</td>
-          <td class="py-3 px-4">${b.customer_username || "-"}</td>
-          <td class="py-3 px-4">${providerCell}</td>
-          <td class="py-3 px-4">${statusBadge(b.status)}</td>
-          <td class="py-3 px-4">${actionCell}</td>
-        `;
-
+      tr.innerHTML = `
+        <td class="font-semibold text-slate-900">#${b.id}</td>
+        <td>${b.service_name}</td>
+        <td>${b.customer_username || "-"}</td>
+        <td>${providerCell}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>${actionCell}</td>
+      `;
       list.appendChild(tr);
     });
 
@@ -155,8 +149,7 @@
   }
 
   function bindAssignButtons() {
-    const buttons = document.querySelectorAll("[data-assign-btn]");
-    buttons.forEach((btn) => {
+    document.querySelectorAll("[data-assign-btn]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const bookingId = btn.getAttribute("data-assign-btn");
         const select = document.querySelector(`[data-provider-select="${bookingId}"]`);

@@ -3,69 +3,64 @@
 {% block title %}Admin Users{% endblock %}
 
 {% block content %}
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-  .admin-font { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
-  .admin-bg { background: radial-gradient(900px 300px at 10% -10%, #dcfce7 0%, transparent 60%),
-              radial-gradient(900px 300px at 90% -10%, #e0e7ff 0%, transparent 60%),
-              linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
-</style>
+<section class="page-section">
+  <div class="page-shell dashboard-shell">
+    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="muted-label">Admin users</p>
+        <h1 class="section-title mt-2 text-3xl font-bold text-slate-900">User accounts and provider configuration</h1>
+        <p class="helper-text mt-2">Search, filter, activate, delete, and manage provider services or prices.</p>
+      </div>
+      <div class="pill-nav">
+        <a href="/admin-panel/">Overview</a>
+        <a href="/admin-panel/bookings/">Bookings</a>
+        <a href="/admin-panel/users/" class="is-active">Users</a>
+        <a href="/admin-panel/services/">Services</a>
+        <a href="/admin-panel/reviews/">Reviews</a>
+      </div>
+    </div>
 
-<div class="admin-font admin-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
-    <div>
-      <p class="text-sm uppercase tracking-widest text-slate-500">Admin</p>
-      <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Users</h2>
-      <p class="text-slate-600 mt-2">Activate or deactivate accounts.</p>
+    <div class="page-shell content-inset mb-6">
+      <div class="filter-grid lg:grid-cols-5">
+        <input id="filter-user-search" class="input-modern" placeholder="Search username, name, email" />
+        <select id="filter-user-role" class="select-modern">
+          <option value="">All roles</option>
+          <option value="CUSTOMER">Customer</option>
+          <option value="PROVIDER">Provider</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+        <select id="filter-user-active" class="select-modern">
+          <option value="">All status</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <input id="filter-user-city" class="input-modern" placeholder="City" />
+        <input id="filter-user-phone" class="input-modern" placeholder="Mobile Number" />
+      </div>
+    </div>
+
+    <div class="table-shell">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm table-fixed">
+          <thead>
+            <tr>
+              <th class="w-40">Username</th>
+              <th class="w-44">Full Name</th>
+              <th class="w-56">Email</th>
+              <th class="w-40">Mobile</th>
+              <th class="w-28">Role</th>
+              <th class="w-32">City</th>
+              <th class="w-72">Services</th>
+              <th class="w-24 text-center">Active</th>
+              <th class="w-40 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-list"></tbody>
+        </table>
+      </div>
     </div>
   </div>
-
-  <div class="flex flex-wrap gap-3 mb-8">
-    <a href="/admin-panel/" class="px-4 py-2 rounded-full bg-white border">Overview</a>
-    <a href="/admin-panel/bookings/" class="px-4 py-2 rounded-full bg-white border">Bookings</a>
-    <a href="/admin-panel/users/" class="px-4 py-2 rounded-full bg-slate-900 text-white">Users</a>
-    <a href="/admin-panel/services/" class="px-4 py-2 rounded-full bg-white border">Services</a>
-    <a href="/admin-panel/reviews/" class="px-4 py-2 rounded-full bg-white border">Reviews</a>
-  </div>
-
-  <div class="bg-white/80 rounded-2xl border border-slate-100 p-4 shadow-sm mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-      <input id="filter-user-search" class="border rounded p-2" placeholder="Search username, name or email" />
-      <select id="filter-user-role" class="border rounded p-2">
-        <option value="">All roles</option>
-        <option value="CUSTOMER">Customer</option>
-        <option value="PROVIDER">Provider</option>
-        <option value="ADMIN">Admin</option>
-      </select>
-      <select id="filter-user-active" class="border rounded p-2">
-        <option value="">All status</option>
-        <option value="true">Active</option>
-        <option value="false">Inactive</option>
-      </select>
-      <input id="filter-user-city" class="border rounded p-2" placeholder="City" />
-      <input id="filter-user-phone" class="border rounded p-2" placeholder="Mobile Number" />
-    </div>
-  </div>
-
-  <div class="overflow-x-auto bg-white/80 rounded-2xl border border-slate-100 shadow-sm">
-    <table class="min-w-full text-sm table-fixed">
-      <thead class="text-left text-slate-500">
-        <tr class="border-b">
-          <th class="py-3 px-4 w-40">Username</th>
-          <th class="py-3 px-4 w-44">Full Name</th>
-          <th class="py-3 px-4 w-56">Email</th>
-          <th class="py-3 px-4 w-40">Mobile</th>
-          <th class="py-3 px-4 w-28">Role</th>
-          <th class="py-3 px-4 w-32">City</th>
-          <th class="py-3 px-4 w-64">Services</th>
-          <th class="py-3 px-4 w-20 text-center">Active</th>
-          <th class="py-3 px-4 w-32 text-center">Action</th>
-        </tr>
-      </thead>
-      <tbody id="admin-users-list"></tbody>
-    </table>
-  </div>
-</div>
+</section>
 
 <script src="{% static 'js/admin_users.js' %}"></script>
 {% endblock %}

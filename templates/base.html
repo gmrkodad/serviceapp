@@ -1,122 +1,103 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}ServiceApp{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    html, body { max-width: 100%; overflow-x: hidden; }
-    .app-brand {
-      background: linear-gradient(90deg, #0f172a 0%, #000000 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=1" />
 </head>
-
-<body class="bg-gray-50">
-
-<!-- TOP NAV -->
+<body>
 {% if show_nav %}
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
-
-    <!-- Logo -->
-    <a id="nav-home-link" href="/" class="text-xl sm:text-2xl font-extrabold tracking-tight app-brand">
-      ServiceApp
+<nav class="top-nav">
+  <div class="flex items-center justify-between gap-3 px-3 py-3 sm:px-5">
+    <a id="nav-home-link" href="/" class="brand-wordmark text-xl sm:text-2xl">
+      Service<span>App</span>
     </a>
 
-    <!-- Right actions -->
-    <div class="flex items-center space-x-2 sm:space-x-4">
-
-      <!-- Notifications -->
+    <div class="flex items-center gap-2 sm:gap-3">
       <div class="relative">
-        <button id="notif-bell" class="relative rounded-xl p-2 text-slate-600 hover:bg-slate-100 transition">
-          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8">
+        <button
+          id="notif-bell"
+          class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:text-slate-900"
+        >
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5"></path>
             <path d="M10 17a2 2 0 104 0"></path>
           </svg>
           <span
             id="notif-count"
-            class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
+            class="hidden absolute -right-1 -top-1 min-w-[20px] rounded-full bg-amber-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
           </span>
         </button>
 
         <div
           id="notif-dropdown"
-          class="hidden absolute right-0 mt-2 w-[92vw] max-w-sm sm:w-80 bg-white shadow rounded-lg z-50">
-
-          <div class="p-3 border-b font-semibold">
+          class="hidden absolute right-0 mt-3 w-[92vw] max-w-sm overflow-hidden rounded-[22px] border border-slate-200 bg-white/95 shadow-2xl backdrop-blur sm:w-80 z-50">
+          <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-3 font-semibold text-slate-900">
             Notifications
           </div>
-
-          <ul id="notif-list" class="max-h-64 overflow-y-auto"></ul>
-
+          <ul id="notif-list" class="max-h-72 overflow-y-auto"></ul>
           <button
             id="mark-all"
-            class="w-full text-sm text-slate-800 p-2 border-t hover:bg-gray-50">
+            class="w-full border-t border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Mark all as read
           </button>
         </div>
       </div>
 
-      <!-- Account Dropdown -->
       <div class="relative">
         <button
           id="profile-menu-btn"
-          class="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-100 px-2 py-1.5 text-sm text-slate-700 shadow-sm hover:shadow-md transition"
+          class="inline-flex items-center gap-3 rounded-[20px] border border-slate-200 bg-white/85 px-2 py-1.5 text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           aria-haspopup="true"
           aria-expanded="false">
-          <span id="nav-avatar" class="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-800 to-black text-white text-xs font-semibold flex items-center justify-center">A</span>
-          <span class="hidden sm:flex items-center gap-2 pr-0.5">
-            <span class="text-sm font-semibold text-slate-800" id="nav-username">Account</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+          <span id="nav-avatar" class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-600 text-xs font-semibold text-white">A</span>
+          <span class="hidden min-w-0 sm:flex sm:flex-col sm:items-start">
+            <span class="truncate text-sm font-semibold text-slate-900" id="nav-username">Account</span>
+            <span class="text-xs text-slate-500">Signed in</span>
           </span>
-          <svg viewBox="0 0 24 24" class="w-4 h-4 text-slate-500 pr-0.5" fill="none" stroke="currentColor" stroke-width="2">
+          <svg viewBox="0 0 24 24" class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M6 9l6 6 6-6"></path>
           </svg>
         </button>
 
         <div
           id="profile-menu"
-          class="hidden absolute right-0 mt-2 w-[92vw] max-w-xs sm:w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-          <div class="px-4 py-3 border-b bg-slate-50/70">
-            <p id="profile-name" class="text-sm font-semibold text-slate-900 truncate">Account</p>
-            <p id="profile-role" class="text-xs text-slate-500 truncate">Signed in</p>
+          class="hidden absolute right-0 mt-3 w-[92vw] max-w-xs overflow-hidden rounded-[24px] border border-slate-200 bg-white/95 shadow-2xl backdrop-blur sm:w-72 z-50">
+          <div class="border-b border-slate-200 bg-slate-50/70 px-4 py-4">
+            <p id="profile-name" class="truncate text-sm font-semibold text-slate-900">Account</p>
+            <p id="profile-role" class="truncate text-xs text-slate-500">Signed in</p>
           </div>
           <a
             id="account-link"
             href="/dashboard/customer/"
-            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+            class="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
             Account
           </a>
           <a
             href="/account/change-password/"
-            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
+            class="block px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
             Change Password
           </a>
-          <div class="border-t"></div>
+          <div class="border-t border-slate-200"></div>
           <button
             id="logout-btn"
-            class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-rose-50">
+            class="w-full px-4 py-3 text-left text-sm font-semibold text-rose-600 hover:bg-rose-50">
             Logout
           </button>
         </div>
       </div>
-
     </div>
   </div>
 </nav>
 {% endif %}
 
-<!-- PAGE CONTENT -->
-<main class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+<main class="page-main {% if not show_nav %}auth-main{% endif %}">
   <button
     id="back-btn"
-    class="mb-6 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
+    class="back-button mb-6 inline-flex items-center gap-2 text-sm">
     &larr; Back
   </button>
   {% block content %}{% endblock %}

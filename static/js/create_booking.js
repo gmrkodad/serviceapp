@@ -205,12 +205,12 @@ async function loadProviderServicesForSelection() {
     const checked = selectedServiceIds.has(svc.id);
     const row = document.createElement("label");
     row.className =
-      "flex items-start gap-2 rounded-lg border border-slate-200 bg-white p-2.5 cursor-pointer hover:border-slate-300 transition";
+      "glass-row flex cursor-pointer items-start gap-3 rounded-2xl p-3 transition hover:-translate-y-0.5";
     row.innerHTML = `
-      <input type="checkbox" data-book-service-id="${svc.id}" class="mt-1 accent-black" ${checked ? "checked" : ""} />
+      <input type="checkbox" data-book-service-id="${svc.id}" class="mt-1 h-4 w-4 accent-black" ${checked ? "checked" : ""} />
       <div class="min-w-0">
-        <p class="text-sm font-medium text-slate-900">${svc.name}</p>
-        <p class="text-xs text-slate-500">Price: Rs.${svc.price ?? svc.base_price ?? "N/A"}</p>
+        <p class="text-sm font-semibold text-slate-900">${svc.name}</p>
+        <p class="mt-1 text-xs text-slate-500">Price: Rs.${svc.price ?? svc.base_price ?? "N/A"}</p>
       </div>
     `;
     additionalServicesWrap.appendChild(row);

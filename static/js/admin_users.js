@@ -82,13 +82,19 @@
       }
 
       servicesCache = services || [];
-
-      const users = await usersRes.json();
-      usersCache = users || [];
+      usersCache = (await usersRes.json()) || [];
       renderUsers();
-    } catch {
+    } catch (_) {
       // ignore
     }
+  }
+
+  function serviceChip(name) {
+    return `<span class="mr-1 mb-1 inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">${name}</span>`;
+  }
+
+  function actionBtn(classes, attr, id, label) {
+    return `<button class="${classes}" ${attr}="${id}">${label}</button>`;
   }
 
   function renderUsers() {
@@ -105,82 +111,67 @@
         (u.full_name || "").toLowerCase().includes(q) ||
         (u.email || "").toLowerCase().includes(q);
       const matchesRole = !role || u.role === role;
-      const matchesActive =
-        active === "" ? true : String(u.is_active) === active;
-      const matchesCity =
-        !city || (u.city || "").toLowerCase().includes(city);
-      const matchesPhone =
-        !phone || (u.phone || "").toLowerCase().includes(phone);
+      const matchesActive = active === "" ? true : String(u.is_active) === active;
+      const matchesCity = !city || (u.city || "").toLowerCase().includes(city);
+      const matchesPhone = !phone || (u.phone || "").toLowerCase().includes(phone);
       return matchesSearch && matchesRole && matchesActive && matchesCity && matchesPhone;
     });
 
     list.innerHTML = "";
     filtered.forEach((u) => {
       const tr = document.createElement("tr");
-      tr.className = "border-b";
 
-        const serviceChips = (u.provider_services || [])
-          .map((s) => `<span class="px-2 py-1 text-xs rounded bg-slate-100">${s.name}</span>`)
-          .join(" ");
+      const serviceChips = (u.provider_services || []).map((s) => serviceChip(s.name)).join("");
+      const serviceOptions = servicesCache
+        .map((s) => {
+          const selected = (u.provider_services || []).some((ps) => ps.id === s.id) ? "selected" : "";
+          return `<option value="${s.id}" ${selected}>${s.name}</option>`;
+        })
+        .join("");
 
-        const serviceOptions = servicesCache
-          .map((s) => {
-            const selected = (u.provider_services || []).some((ps) => ps.id === s.id)
-              ? "selected"
-              : "";
-            return `<option value="${s.id}" ${selected}>${s.name}</option>`;
-          })
-          .join("");
-
-        const servicesCell = u.role === "PROVIDER"
-          ? `
-            <div class="flex flex-wrap gap-1">${serviceChips || "-"}</div>
-            <div class="mt-2 hidden" data-services-editor="${u.id}">
-              <select multiple class="w-full border rounded p-2 text-sm" data-services-select="${u.id}">
-                ${serviceOptions}
-              </select>
-              <div class="mt-2 flex gap-2">
-                <button class="px-2 py-1 text-xs rounded bg-slate-900 text-white" data-services-save="${u.id}">Save</button>
-                <button class="px-2 py-1 text-xs rounded bg-slate-100" data-services-cancel="${u.id}">Cancel</button>
-              </div>
+      const servicesCell = u.role === "PROVIDER"
+        ? `
+          <div class="flex flex-wrap">${serviceChips || "-"}</div>
+          <div class="mt-3 hidden" data-services-editor="${u.id}">
+            <select multiple class="select-modern min-h-[140px] text-sm" data-services-select="${u.id}">
+              ${serviceOptions}
+            </select>
+            <div class="mt-3 flex gap-2">
+              <button class="btn-primary px-4 py-2 text-xs" data-services-save="${u.id}">Save</button>
+              <button class="btn-ghost px-4 py-2 text-xs" data-services-cancel="${u.id}">Cancel</button>
             </div>
-            <div class="mt-2 hidden" data-prices-editor="${u.id}">
-              <div class="space-y-2" data-prices-list="${u.id}"></div>
-              <div class="mt-2 flex gap-2">
-                <button class="px-2 py-1 text-xs rounded bg-slate-900 text-white" data-prices-save="${u.id}">Save Prices</button>
-                <button class="px-2 py-1 text-xs rounded bg-slate-100" data-prices-cancel="${u.id}">Cancel</button>
-              </div>
-              <p class="text-xs text-slate-500 mt-1" data-prices-msg="${u.id}"></p>
-            </div>
-          `
-          : "-";
-
-        const actionButtons = `
-          <div class="flex flex-col gap-2">
-            <button class="px-3 py-1 rounded text-xs ${
-              u.is_active ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
-            }" data-toggle-user="${u.id}">
-              ${u.is_active ? "Deactivate" : "Activate"}
-            </button>
-            ${u.role === "PROVIDER" ? `<button class="px-3 py-1 rounded text-xs bg-blue-100 text-blue-700" data-services-edit="${u.id}">Edit Services</button>` : ""}
-            ${u.role === "PROVIDER" ? `<button class="px-3 py-1 rounded text-xs bg-violet-100 text-violet-700" data-prices-edit="${u.id}">Edit Prices</button>` : ""}
-            <button class="px-3 py-1 rounded text-xs bg-rose-100 text-rose-700" data-delete-user="${u.id}" data-username="${u.username}">
-              Delete
-            </button>
           </div>
-        `;
+          <div class="mt-3 hidden" data-prices-editor="${u.id}">
+            <div class="space-y-2" data-prices-list="${u.id}"></div>
+            <div class="mt-3 flex gap-2">
+              <button class="btn-primary px-4 py-2 text-xs" data-prices-save="${u.id}">Save Prices</button>
+              <button class="btn-ghost px-4 py-2 text-xs" data-prices-cancel="${u.id}">Cancel</button>
+            </div>
+            <p class="mt-2 text-xs text-slate-500" data-prices-msg="${u.id}"></p>
+          </div>
+        `
+        : "-";
 
-        tr.innerHTML = `
-          <td class="py-3 px-4 truncate">${u.username}</td>
-          <td class="py-3 px-4 truncate">${u.full_name || "-"}</td>
-          <td class="py-3 px-4 truncate">${u.email || "-"}</td>
-          <td class="py-3 px-4 truncate">${u.phone || "-"}</td>
-          <td class="py-3 px-4">${u.role}</td>
-          <td class="py-3 px-4 truncate">${u.city || "-"}</td>
-          <td class="py-3 px-4 align-top">${servicesCell}</td>
-          <td class="py-3 px-4 text-center">${u.is_active ? "Yes" : "No"}</td>
-          <td class="py-3 px-4 text-center">${actionButtons}</td>
-        `;
+      const actionButtons = `
+        <div class="flex flex-col gap-2">
+          ${actionBtn(u.is_active ? "btn-danger px-3 py-2 text-xs" : "btn-primary px-3 py-2 text-xs", "data-toggle-user", u.id, u.is_active ? "Deactivate" : "Activate")}
+          ${u.role === "PROVIDER" ? actionBtn("btn-ghost px-3 py-2 text-xs", "data-services-edit", u.id, "Edit Services") : ""}
+          ${u.role === "PROVIDER" ? actionBtn("btn-ghost px-3 py-2 text-xs", "data-prices-edit", u.id, "Edit Prices") : ""}
+          ${actionBtn("btn-danger px-3 py-2 text-xs", "data-delete-user", u.id, "Delete")}
+        </div>
+      `;
+
+      tr.innerHTML = `
+        <td class="font-semibold text-slate-900">${u.username}</td>
+        <td>${u.full_name || "-"}</td>
+        <td>${u.email || "-"}</td>
+        <td>${u.phone || "-"}</td>
+        <td><span class="soft-chip bg-slate-100 text-slate-700">${u.role}</span></td>
+        <td>${u.city || "-"}</td>
+        <td>${servicesCell}</td>
+        <td class="text-center">${u.is_active ? "Yes" : "No"}</td>
+        <td class="text-center">${actionButtons}</td>
+      `;
       list.appendChild(tr);
     });
 
@@ -191,13 +182,10 @@
   }
 
   function bindToggleButtons() {
-    const buttons = document.querySelectorAll("[data-toggle-user]");
-    buttons.forEach((btn) => {
+    document.querySelectorAll("[data-toggle-user]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const userId = btn.getAttribute("data-toggle-user");
-        const res = await authFetch(`/api/accounts/admin/users/${userId}/toggle/`, {
-          method: "POST",
-        });
+        const res = await authFetch(`/api/accounts/admin/users/${userId}/toggle/`, { method: "POST" });
         if (res.status === 401) {
           handleUnauthorized();
           return;
@@ -208,23 +196,17 @@
   }
 
   function bindDeleteButtons() {
-    const buttons = document.querySelectorAll("[data-delete-user]");
-    buttons.forEach((btn) => {
+    document.querySelectorAll("[data-delete-user]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const userId = btn.getAttribute("data-delete-user");
-        const username = btn.getAttribute("data-username") || "this user";
-        const ok = window.confirm(`Delete ${username}? This action cannot be undone.`);
+        const ok = window.confirm("Delete this user? This action cannot be undone.");
         if (!ok) return;
 
-        const res = await authFetch(`/api/accounts/admin/users/${userId}/`, {
-          method: "DELETE",
-        });
-
+        const res = await authFetch(`/api/accounts/admin/users/${userId}/`, { method: "DELETE" });
         if (res.status === 401) {
           handleUnauthorized();
           return;
         }
-
         loadUsers();
       });
     });
@@ -301,12 +283,14 @@
         }
 
         listEl.innerHTML = prices.map((p) => `
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center border rounded p-2">
-            <div class="sm:col-span-2">
-              <p class="text-xs font-medium text-slate-800">${p.service_name}</p>
-              <p class="text-[11px] text-slate-500">Base: Rs.${p.base_price}</p>
+          <div class="glass-row p-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_120px] sm:items-center">
+              <div>
+                <p class="text-sm font-semibold text-slate-900">${p.service_name}</p>
+                <p class="text-xs text-slate-500">Base: Rs.${p.base_price}</p>
+              </div>
+              <input type="number" min="1" step="1" class="input-modern text-sm" data-admin-price-input="${userId}" data-service-id="${p.service_id}" value="${p.price}">
             </div>
-            <input type="number" min="1" step="1" class="border rounded p-1 text-xs" data-admin-price-input="${userId}" data-service-id="${p.service_id}" value="${p.price}">
           </div>
         `).join("");
       });

@@ -1,78 +1,60 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
-<div class="max-w-6xl mx-auto px-4 py-8">
-  <div class="rounded-3xl border border-slate-800 bg-gradient-to-r from-black via-slate-900 to-slate-800 text-white p-6 md:p-8 mb-8 shadow-xl">
-    <p class="uppercase tracking-[0.25em] text-[11px] text-slate-300">Booking</p>
-    <h1 class="text-3xl md:text-4xl font-extrabold mt-2 tracking-tight">Confirm Your Service</h1>
-    <p class="text-slate-300 mt-2">Pick schedule, verify address, and place your booking in one step.</p>
-  </div>
+{% block title %}Create Booking{% endblock %}
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-xl font-semibold">Booking Details</h2>
-        <span class="text-xs px-2.5 py-1 rounded-full border border-slate-300 text-slate-700 bg-slate-50">Secure Checkout</span>
+{% block content %}
+<section class="page-section">
+  <div class="page-hero p-6 md:p-8">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <span class="eyebrow">Booking confirmation</span>
+        <h1 class="hero-title mt-5 text-3xl font-extrabold tracking-tight md:text-5xl">Review the job details and confirm the visit in one clean step.</h1>
+        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">The backend booking flow stays the same. This screen now focuses on clarity, scheduling, and provider context.</p>
+      </div>
+      <span class="soft-chip border border-white/15 bg-white/10 text-white">Secure booking</span>
+    </div>
+  </div>
+</section>
+
+<section class="page-section">
+  <div class="split-grid lg:grid-cols-[minmax(0,2fr)_360px]">
+    <div class="page-shell content-inset">
+      <div class="mb-5">
+        <p class="muted-label">Booking details</p>
+        <h2 class="section-title mt-2 text-2xl font-bold text-slate-900">Fill booking information</h2>
       </div>
 
       <form id="booking-form" class="space-y-5">
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-slate-800">Services in this booking</h3>
-            <span id="selected-services-count" class="text-xs text-slate-500">1 selected</span>
+        <div class="page-shell content-inset">
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900">Services in this booking</h3>
+            <span id="selected-services-count" class="soft-chip bg-slate-100 text-slate-700">1 selected</span>
           </div>
-          <div id="additional-services-wrap" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-          <p id="services-select-error" class="text-red-600 text-sm mt-2 hidden"></p>
+          <div id="additional-services-wrap" class="grid grid-cols-1 gap-2 sm:grid-cols-2"></div>
+          <p id="services-select-error" class="status-text-error hidden mt-3 text-sm"></p>
         </div>
 
         <div>
-          <label for="date" class="block text-sm font-medium text-slate-700 mb-2">Preferred Date</label>
-          <input
-            type="date"
-            id="date"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
-            required
-          />
+          <label for="date" class="mb-2 block text-sm font-semibold text-slate-700">Preferred Date</label>
+          <input type="date" id="date" class="input-modern" required />
         </div>
 
         <div>
-          <label for="address" class="block text-sm font-medium text-slate-700 mb-2">Service Address</label>
-          <textarea
-            id="address"
-            rows="3"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
-            placeholder="House number, street, area"
-            required
-          ></textarea>
+          <label for="address" class="mb-2 block text-sm font-semibold text-slate-700">Service Address</label>
+          <textarea id="address" rows="3" class="textarea-modern" placeholder="House number, street, area" required></textarea>
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-2 gap-3">
-            <label for="customer-location" class="block text-sm font-medium text-slate-700">Customer Location</label>
-            <button
-              type="button"
-              id="use-current-location"
-              class="text-xs px-3 py-1 rounded-full border border-slate-300 text-slate-700 hover:bg-slate-100 transition"
-            >
-              Use Current Location
-            </button>
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <label for="customer-location" class="block text-sm font-semibold text-slate-700">Customer Location</label>
+            <button type="button" id="use-current-location" class="btn-ghost px-4 py-2 text-xs">Use Current Location</button>
           </div>
-          <input
-            type="text"
-            id="customer-location"
-            class="w-full border border-slate-300 rounded-lg p-3 bg-slate-50 text-slate-700"
-            placeholder="City or GPS location"
-            readonly
-          />
+          <input type="text" id="customer-location" class="input-modern bg-slate-50" placeholder="City or GPS location" readonly />
         </div>
 
         <div>
-          <label for="time-slot" class="block text-sm font-medium text-slate-700 mb-2">Preferred Time Slot</label>
-          <select
-            id="time-slot"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
-            required
-          >
+          <label for="time-slot" class="mb-2 block text-sm font-semibold text-slate-700">Preferred Time Slot</label>
+          <select id="time-slot" class="select-modern" required>
             <option value="MORNING">Morning (8 AM - 12 PM)</option>
             <option value="AFTERNOON">Afternoon (12 PM - 4 PM)</option>
             <option value="EVENING">Evening (4 PM - 8 PM)</option>
@@ -80,61 +62,54 @@
         </div>
 
         <div>
-          <label for="landmark" class="block text-sm font-medium text-slate-700 mb-2">Landmark (Optional)</label>
-          <input
-            type="text"
-            id="landmark"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
-            placeholder="Near metro station, mall, etc."
-          />
+          <label for="landmark" class="mb-2 block text-sm font-semibold text-slate-700">Landmark (Optional)</label>
+          <input type="text" id="landmark" class="input-modern" placeholder="Near metro station, mall, etc." />
         </div>
 
         <div>
-          <label for="notes" class="block text-sm font-medium text-slate-700 mb-2">Special Instructions (Optional)</label>
-          <textarea
-            id="notes"
-            rows="3"
-            class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-slate-300 focus:border-slate-500 outline-none"
-            placeholder="Anything the professional should know"
-          ></textarea>
+          <label for="notes" class="mb-2 block text-sm font-semibold text-slate-700">Special Instructions (Optional)</label>
+          <textarea id="notes" rows="3" class="textarea-modern" placeholder="Anything the professional should know"></textarea>
         </div>
 
-        <p id="error" class="text-red-600 text-sm hidden"></p>
-        <p id="success" class="text-emerald-600 text-sm hidden"></p>
+        <p id="error" class="status-text-error hidden text-sm"></p>
+        <p id="success" class="status-text-success hidden text-sm"></p>
 
-        <div class="pt-2">
-          <button
-            id="submit-booking"
-            class="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition disabled:opacity-60 disabled:cursor-not-allowed font-semibold"
-          >
-            Confirm Booking
-          </button>
-        </div>
+        <button id="submit-booking" class="btn-primary">Confirm Booking</button>
       </form>
     </div>
 
-    <aside class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 h-fit">
-      <h3 class="text-lg font-semibold mb-4">Selected Service</h3>
-      <div class="space-y-2 text-sm">
-        <p><span class="text-slate-500">Service:</span> <span id="selected-service-name" class="font-medium text-slate-800">Loading...</span></p>
-        <p><span class="text-slate-500">Provider:</span> <span id="selected-provider-name" class="font-medium text-slate-800">Loading...</span></p>
-        <p><span class="text-slate-500">Rating:</span> <span id="selected-provider-rating" class="font-medium text-slate-800">-</span></p>
-        <p><span class="text-slate-500">Price:</span> <span id="selected-provider-price" class="font-medium text-emerald-700">-</span></p>
-        <p><span class="text-slate-500">Location:</span> <span id="selected-provider-location" class="font-medium text-slate-800">-</span></p>
+    <aside class="page-shell content-inset">
+      <p class="muted-label">Provider summary</p>
+      <h3 class="section-title mt-2 text-xl font-bold text-slate-900">Selected service</h3>
+      <div class="mt-5 space-y-3 text-sm">
+        <div class="glass-row p-4">
+          <p class="muted-label">Service</p>
+          <p id="selected-service-name" class="mt-1 font-semibold text-slate-900">Loading...</p>
+        </div>
+        <div class="glass-row p-4">
+          <p class="muted-label">Provider</p>
+          <p id="selected-provider-name" class="mt-1 font-semibold text-slate-900">Loading...</p>
+        </div>
+        <div class="glass-row p-4">
+          <p class="muted-label">Rating</p>
+          <p id="selected-provider-rating" class="mt-1 font-semibold text-slate-900">-</p>
+        </div>
+        <div class="glass-row p-4">
+          <p class="muted-label">Price</p>
+          <p id="selected-provider-price" class="mt-1 font-semibold text-emerald-700">-</p>
+        </div>
+        <div class="glass-row p-4">
+          <p class="muted-label">Location</p>
+          <p id="selected-provider-location" class="mt-1 font-semibold text-slate-900">-</p>
+        </div>
       </div>
 
-      <hr class="my-5 border-slate-200" />
-
-      <h4 class="text-sm font-semibold text-slate-800 mb-2">Tips</h4>
-      <ul class="text-sm text-slate-600 space-y-1 list-disc pl-5">
-        <li>Use complete address for quick confirmation.</li>
-        <li>Keep phone reachable on service day.</li>
-        <li>You can track updates from dashboard.</li>
-      </ul>
+      <div class="mt-6 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
+        Use a complete address and keep your phone reachable on the service day for faster confirmation.
+      </div>
     </aside>
   </div>
-</div>
+</section>
 
 <script src="{% static 'js/create_booking.js' %}?v=3"></script>
-
 {% endblock %}

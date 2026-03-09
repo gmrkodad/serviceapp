@@ -5,14 +5,12 @@ const list = document.getElementById("booking-list");
 const empty = document.getElementById("empty");
 const recentList = document.getElementById("provider-recent-bookings");
 const overviewEmpty = document.getElementById("provider-overview-empty");
-
 const servicesMsg = document.getElementById("provider-services-msg");
 const currentServicesWrap = document.getElementById("provider-current-services");
 const servicePicker = document.getElementById("provider-service-picker");
 const serviceAddBtn = document.getElementById("provider-service-add");
 const serviceSearchInput = document.getElementById("provider-service-search");
 const serviceSearchBtn = document.getElementById("provider-service-search-btn");
-
 const pricesSaveBtn = document.getElementById("provider-prices-save");
 const pricesMsg = document.getElementById("provider-prices-msg");
 
@@ -54,7 +52,6 @@ async function authFetch(url, options = {}) {
   };
 
   let res = await fetch(url, { ...options, headers });
-
   if (res.status !== 401) return res;
 
   const newAccess = await refreshAccessToken();
@@ -75,12 +72,12 @@ function handleUnauthorized() {
 
 function statusPill(status) {
   const map = {
-    PENDING: "bg-amber-100 text-amber-700",
-    CONFIRMED: "bg-blue-100 text-blue-700",
-    IN_PROGRESS: "bg-indigo-100 text-indigo-700",
-    COMPLETED: "bg-emerald-100 text-emerald-700",
+    PENDING: "bg-amber-50 text-amber-800 border-amber-200",
+    CONFIRMED: "bg-sky-50 text-sky-800 border-sky-200",
+    IN_PROGRESS: "bg-indigo-50 text-indigo-800 border-indigo-200",
+    COMPLETED: "bg-emerald-50 text-emerald-800 border-emerald-200",
   };
-  return `<span class="px-2 py-1 rounded text-xs ${map[status] || "bg-slate-100 text-slate-700"}">${status}</span>`;
+  return `<span class="inline-flex rounded-full border px-3 py-1 text-xs font-bold ${map[status] || "bg-slate-100 text-slate-700 border-slate-200"}">${status.replace("_", " ")}</span>`;
 }
 
 function formatTimeSlot(slot) {
@@ -95,29 +92,21 @@ function formatTimeSlot(slot) {
 function getActionButtons(b) {
   if (b.status === "PENDING") {
     return `
-      <button onclick="providerAction(${b.id}, 'accept')" class="bg-green-600 text-white px-3 py-1 rounded">Accept</button>
-      <button onclick="providerAction(${b.id}, 'reject')" class="bg-red-600 text-white px-3 py-1 rounded">Reject</button>
+      <button data-booking-action="accept" data-booking-id="${b.id}" class="btn-primary px-4 py-2 text-sm">Accept</button>
+      <button data-booking-action="reject" data-booking-id="${b.id}" class="btn-danger px-4 py-2 text-sm">Reject</button>
     `;
   }
 
   if (b.status === "CONFIRMED") {
-    return `
-      <button onclick="updateStatus(${b.id}, 'IN_PROGRESS')" class="bg-blue-600 text-white px-3 py-1 rounded">
-        Start Job
-      </button>
-    `;
+    return `<button data-status-action="IN_PROGRESS" data-booking-id="${b.id}" class="btn-primary px-4 py-2 text-sm">Start Job</button>`;
   }
 
   if (b.status === "IN_PROGRESS") {
-    return `
-      <button onclick="updateStatus(${b.id}, 'COMPLETED')" class="bg-purple-600 text-white px-3 py-1 rounded">
-        Complete Job
-      </button>
-    `;
+    return `<button data-status-action="COMPLETED" data-booking-id="${b.id}" class="btn-primary px-4 py-2 text-sm">Complete Job</button>`;
   }
 
   if (b.status === "COMPLETED") {
-    return `<span class="text-green-700 font-semibold">Completed</span>`;
+    return `<span class="soft-chip bg-emerald-50 text-emerald-800">Completed</span>`;
   }
 
   return "";
@@ -128,18 +117,52 @@ function renderBookingCard(b) {
     ? b.service_names.join(", ")
     : b.service_name;
   return `
-    <div class="border border-slate-200 p-4 rounded-xl bg-white shadow-sm">
-      <div class="flex items-center justify-between mb-2">
-        <p class="font-semibold text-slate-900">#${b.id} - ${bookingServiceLabel}</p>
-        ${statusPill(b.status)}
+    <div class="page-shell content-inset">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="section-title text-xl font-bold text-slate-900">#${b.id} ${bookingServiceLabel}</p>
+            ${statusPill(b.status)}
+          </div>
+          <div class="mt-3 grid grid-cols-1 gap-3 text-sm text-slate-600 sm:grid-cols-2">
+            <p><span class="muted-label">Customer</span><br><span class="font-semibold text-slate-900">${b.customer_username}</span></p>
+            <p><span class="muted-label">Address</span><br><span class="font-semibold text-slate-900">${b.address}</span></p>
+            <p><span class="muted-label">Date</span><br><span class="font-semibold text-slate-900">${b.scheduled_date}</span></p>
+            <p><span class="muted-label">Time Slot</span><br><span class="font-semibold text-slate-900">${formatTimeSlot(b.time_slot)}</span></p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">${getActionButtons(b)}</div>
       </div>
-      <p class="text-sm"><strong>Customer:</strong> ${b.customer_username}</p>
-      <p class="text-sm"><strong>Address:</strong> ${b.address}</p>
-      <p class="text-sm"><strong>Date:</strong> ${b.scheduled_date}</p>
-      <p class="text-sm"><strong>Time Slot:</strong> ${formatTimeSlot(b.time_slot)}</p>
-      <div class="mt-3 flex flex-wrap gap-2">${getActionButtons(b)}</div>
     </div>
   `;
+}
+
+function bindBookingButtons() {
+  document.querySelectorAll("[data-booking-action]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-booking-id");
+      const action = btn.getAttribute("data-booking-action");
+      await authFetch(`/api/bookings/provider/action/${id}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      loadBookings();
+    });
+  });
+
+  document.querySelectorAll("[data-status-action]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-booking-id");
+      const status = btn.getAttribute("data-status-action");
+      await authFetch(`/api/bookings/provider/update-status/${id}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      loadBookings();
+    });
+  });
 }
 
 function renderBookingsSection() {
@@ -156,6 +179,7 @@ function renderBookingsSection() {
     card.innerHTML = renderBookingCard(b);
     list.appendChild(card.firstElementChild);
   });
+  bindBookingButtons();
 }
 
 function renderOverviewSection() {
@@ -167,18 +191,22 @@ function renderOverviewSection() {
   if (!recent.length) {
     if (overviewEmpty) overviewEmpty.classList.remove("hidden");
     return;
-  }  recent.forEach((b) => {
+  }
+
+  recent.forEach((b) => {
     const bookingServiceLabel = Array.isArray(b.service_names) && b.service_names.length
       ? b.service_names.join(", ")
       : b.service_name;
     const row = document.createElement("div");
-    row.className = "rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-start justify-between gap-3";
+    row.className = "glass-row p-4";
     row.innerHTML = `
-      <div>
-        <p class="font-medium text-slate-900">#${b.id} - ${bookingServiceLabel}</p>
-        <p class="text-sm text-slate-600">${b.customer_username} | ${b.scheduled_date} | ${formatTimeSlot(b.time_slot)}</p>
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p class="text-lg font-bold text-slate-900">#${b.id} ${bookingServiceLabel}</p>
+          <p class="mt-1 text-sm text-slate-600">${b.customer_username} | ${b.scheduled_date} | ${formatTimeSlot(b.time_slot)}</p>
+        </div>
+        ${statusPill(b.status)}
       </div>
-      ${statusPill(b.status)}
     `;
     recentList.appendChild(row);
   });
@@ -262,7 +290,7 @@ function renderMyServices() {
   currentServicesWrap.innerHTML = "";
 
   if (!myServices.length) {
-    currentServicesWrap.innerHTML = "<p class='text-sm text-slate-500'>No services added yet.</p>";
+    currentServicesWrap.innerHTML = "<p class='empty-panel'>No services added yet.</p>";
     return;
   }
 
@@ -271,27 +299,27 @@ function renderMyServices() {
     .sort((a, b) => a.name.localeCompare(b.name))
     .forEach((service) => {
       const row = document.createElement("div");
-      row.className = "rounded-xl border border-slate-200 bg-white p-4";
+      row.className = "page-shell content-inset";
       row.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-3 items-center">
-          <div class="md:col-span-3">
-            <p class="font-semibold text-slate-900">${service.name}</p>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_180px_120px] md:items-center">
+          <div>
+            <p class="text-lg font-bold text-slate-900">${service.name}</p>
           </div>
-          <div class="md:col-span-2">
+          <div>
             <input
               type="number"
               min="1"
               step="1"
               value="${service.price ?? ""}"
               data-price-service-id="${service.id}"
-              class="w-full border rounded-lg px-3 py-2"
+              class="input-modern"
               placeholder="Set your price"
             />
           </div>
-          <div class="md:col-span-1">
+          <div>
             <button
               data-remove-service-id="${service.id}"
-              class="w-full border border-red-300 text-red-700 px-3 py-2 rounded-lg hover:bg-red-50"
+              class="btn-danger w-full px-4 py-3"
             >
               Remove
             </button>
@@ -458,22 +486,3 @@ function setupTabs() {
 loadBookings();
 loadProviderServices();
 setupTabs();
-
-function providerAction(id, action) {
-  authFetch(`/api/bookings/provider/action/${id}/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action }),
-  }).then(() => loadBookings());
-}
-
-function updateStatus(id, status) {
-  authFetch(`/api/bookings/provider/update-status/${id}/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
-  }).then(() => loadBookings());
-}
-
-
-

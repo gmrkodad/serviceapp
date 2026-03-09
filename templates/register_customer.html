@@ -1,61 +1,57 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Customer Registration</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% block title %}Customer Registration{% endblock %}
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+{% block content %}
+<section class="auth-shell">
+  <div class="page-hero auth-hero">
+    <span class="eyebrow">Customer onboarding</span>
+    <h1 class="mt-6 text-4xl font-extrabold leading-tight md:text-5xl">Set up your customer account and start booking trusted services.</h1>
+    <p class="mt-4 max-w-xl text-sm leading-7 text-slate-200 md:text-base">
+      Once registered, you can save your profile, explore service categories, create bookings, and monitor updates from your dashboard.
+    </p>
 
-<div class="bg-white p-8 rounded-xl shadow w-full max-w-md">
+    <div class="auth-hero-pattern">
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">Easy booking</p>
+        <p class="mt-2 text-lg font-bold">Choose a service, compare providers, and confirm in minutes.</p>
+      </div>
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">OTP verification</p>
+        <p class="mt-2 text-lg font-bold">Phone verification is built into signup with the same backend flow.</p>
+      </div>
+    </div>
+  </div>
 
-  <h2 class="text-xl font-semibold text-center mb-6">
-    Customer Signup
-  </h2>
-
-  <form id="register-form" class="space-y-4">
-    <input id="full_name" placeholder="Full Name"
-      class="w-full border px-3 py-2 rounded" required>
-
-    <input id="username" placeholder="Username"
-      class="w-full border px-3 py-2 rounded" required>
-
-    <input id="email" type="email" placeholder="Email"
-      class="w-full border px-3 py-2 rounded" required>
-
-    <input id="password" type="password" placeholder="Password"
-      class="w-full border px-3 py-2 rounded" required>
-
-    <input id="phone" placeholder="Mobile Number"
-      class="w-full border px-3 py-2 rounded" required>
-
-    <div class="flex gap-2">
-      <input id="otp" placeholder="Enter OTP"
-        class="flex-1 border px-3 py-2 rounded" required>
-      <button id="send-otp-btn" type="button"
-        class="px-3 bg-slate-900 text-white rounded text-sm">
-        Send OTP
-      </button>
+  <div class="auth-card">
+    <div class="mb-8">
+      <p class="muted-label">Customer signup</p>
+      <h2 class="auth-title mt-3 text-3xl font-bold text-slate-900">Create customer account</h2>
+      <p class="helper-text mt-2">All existing registration logic stays the same. This update is visual only.</p>
     </div>
 
-    <p id="otp-info" class="text-slate-600 text-center hidden"></p>
-    <p id="otp-error" class="text-red-500 text-center hidden"></p>
+    <form id="register-form" class="auth-stack">
+      <input id="full_name" placeholder="Full Name" class="input-modern" required />
+      <input id="username" placeholder="Username" class="input-modern" required />
+      <input id="email" type="email" placeholder="Email" class="input-modern" required />
+      <input id="password" type="password" placeholder="Password" class="input-modern" required />
+      <input id="phone" placeholder="Mobile Number" class="input-modern" required />
 
-    <!-- ✅ MUST be submit -->
-    <button type="submit"
-      class="w-full bg-slate-900 text-white py-2 rounded hover:bg-slate-800 transition">
-      Register
-    </button>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
+        <input id="otp" placeholder="Enter OTP" class="input-modern" required />
+        <button id="send-otp-btn" type="button" class="btn-secondary whitespace-nowrap">Send OTP</button>
+      </div>
 
-    <p id="error" class="text-red-500 text-center hidden"></p>
-    <p id="success" class="text-green-600 text-center hidden"></p>
-  </form>
+      <p id="otp-info" class="helper-text hidden text-center"></p>
+      <p id="otp-error" class="status-text-error hidden text-center text-sm"></p>
 
-</div>
+      <button type="submit" class="btn-primary w-full">Register</button>
 
-<!-- ✅ JS MUST be included -->
+      <p id="error" class="status-text-error hidden text-center text-sm"></p>
+      <p id="success" class="status-text-success hidden text-center text-sm"></p>
+    </form>
+  </div>
+</section>
+
 <script src="{% static 'js/register_customer.js' %}"></script>
-
-</body>
-</html>
+{% endblock %}

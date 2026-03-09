@@ -184,10 +184,10 @@ function renderSelectedServices() {
 
   selectedServices.forEach((name, id) => {
     const chip = document.createElement("div");
-    chip.className = "px-2 py-1 bg-slate-100 rounded text-sm flex items-center gap-2";
+    chip.className = "inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900";
     chip.innerHTML = `
       <span>${name}</span>
-      <button type="button" class="text-red-600" data-remove-service="${id}">x</button>
+      <button type="button" class="text-amber-700" data-remove-service="${id}">x</button>
     `;
     selectedServicesWrap.appendChild(chip);
   });

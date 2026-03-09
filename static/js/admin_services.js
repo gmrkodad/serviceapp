@@ -84,6 +84,15 @@
     return res.json();
   }
 
+  function editorActions(saveAttr, cancelAttr, id) {
+    return `
+      <div class="mt-3 flex items-center gap-2">
+        <button class="btn-primary px-4 py-2 text-xs" ${saveAttr}="${id}">Save</button>
+        <button class="btn-ghost px-4 py-2 text-xs" ${cancelAttr}="${id}">Cancel</button>
+      </div>
+    `;
+  }
+
   function renderCategories(categories) {
     categoriesCache = categories || [];
     categoriesList.innerHTML = "";
@@ -94,58 +103,42 @@
 
     categoriesCache.forEach((c) => {
       const li = document.createElement("li");
-      li.className = "p-3 border rounded bg-white";
+      li.className = "admin-grid-card";
       li.innerHTML = `
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-semibold">${c.name}</p>
-            <p class="text-xs text-slate-500">${c.description || "No description"}</p>
-            <p class="text-xs text-slate-400 break-all">${c.image_url || "No image URL"}</p>
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div class="min-w-0">
+            <p class="text-lg font-bold text-slate-900">${c.name}</p>
+            <p class="mt-2 text-sm text-slate-600">${c.description || "No description"}</p>
+            <p class="mt-2 text-xs text-slate-400 break-all">${c.image_url || "No image URL"}</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button class="text-xs px-2 py-1 rounded ${
-              c.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-            }" data-toggle-category="${c.id}" data-active="${c.is_active}">
+          <div class="option-actions">
+            <button class="${c.is_active ? "btn-secondary" : "btn-ghost"} px-3 py-2 text-xs" data-toggle-category="${c.id}" data-active="${c.is_active}">
               ${c.is_active ? "Active" : "Inactive"}
             </button>
-            <button class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700" data-edit-category="${c.id}">
-              Edit
-            </button>
-            <button class="text-xs px-2 py-1 rounded bg-red-100 text-red-700" data-delete-category="${c.id}">
-              Delete
-            </button>
+            <button class="btn-ghost px-3 py-2 text-xs" data-edit-category="${c.id}">Edit</button>
+            <button class="btn-danger px-3 py-2 text-xs" data-delete-category="${c.id}">Delete</button>
           </div>
         </div>
-        <div class="mt-3 hidden border-t pt-3" data-category-edit-form="${c.id}">
-          <div class="grid grid-cols-1 gap-2">
-            <input class="border rounded p-2 text-sm" data-category-edit-name="${c.id}" placeholder="Category name" />
-            <textarea class="border rounded p-2 text-sm" rows="2" data-category-edit-description="${c.id}" placeholder="Description"></textarea>
-            <input class="border rounded p-2 text-sm" data-category-edit-image="${c.id}" placeholder="Image URL (https://...)" />
-            <div class="flex flex-col sm:flex-row gap-2">
-              <input type="file" accept="image/*" class="border rounded p-2 text-sm w-full" data-category-edit-file="${c.id}" />
-              <button type="button" class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-category-edit-upload="${c.id}">
+        <div class="mt-4 hidden border-t border-slate-200 pt-4" data-category-edit-form="${c.id}">
+          <div class="grid grid-cols-1 gap-3">
+            <input class="input-modern text-sm" data-category-edit-name="${c.id}" placeholder="Category name" />
+            <textarea class="textarea-modern text-sm" rows="2" data-category-edit-description="${c.id}" placeholder="Description"></textarea>
+            <input class="input-modern text-sm" data-category-edit-image="${c.id}" placeholder="Image URL (https://...)" />
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
+              <input type="file" accept="image/*" class="input-modern text-sm" data-category-edit-file="${c.id}" />
+              <button type="button" class="btn-ghost px-3 py-2 text-xs" data-category-edit-upload="${c.id}">
                 Upload Image
               </button>
             </div>
           </div>
-          <div class="mt-2 flex items-center gap-2">
-            <button class="text-xs px-3 py-1.5 rounded bg-slate-900 text-white" data-save-category-edit="${c.id}">
-              Save
-            </button>
-            <button class="text-xs px-3 py-1.5 rounded bg-slate-200 text-slate-700" data-cancel-category-edit="${c.id}">
-              Cancel
-            </button>
-          </div>
+          ${editorActions("data-save-category-edit", "data-cancel-category-edit", c.id)}
         </div>
       `;
       categoriesList.appendChild(li);
 
-      const nameInput = li.querySelector(`[data-category-edit-name="${c.id}"]`);
-      const descInput = li.querySelector(`[data-category-edit-description="${c.id}"]`);
-      const imageInput = li.querySelector(`[data-category-edit-image="${c.id}"]`);
-      if (nameInput) nameInput.value = c.name || "";
-      if (descInput) descInput.value = c.description || "";
-      if (imageInput) imageInput.value = c.image_url || "";
+      li.querySelector(`[data-category-edit-name="${c.id}"]`).value = c.name || "";
+      li.querySelector(`[data-category-edit-description="${c.id}"]`).value = c.description || "";
+      li.querySelector(`[data-category-edit-image="${c.id}"]`).value = c.image_url || "";
 
       const option = document.createElement("option");
       option.value = c.id;
@@ -188,61 +181,44 @@
 
     filtered.forEach((s) => {
       const li = document.createElement("li");
-      li.className = "p-3 border rounded bg-white";
+      li.className = "admin-grid-card";
       li.innerHTML = `
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-semibold">${s.name} <span class="text-xs text-slate-500">(${s.category_name})</span></p>
-            <p class="text-xs text-slate-500">INR ${s.base_price}</p>
-            <p class="text-xs text-slate-400 break-all">${s.image_url || "No image URL"}</p>
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div class="min-w-0">
+            <p class="text-lg font-bold text-slate-900">${s.name} <span class="text-sm font-medium text-slate-500">(${s.category_name})</span></p>
+            <p class="mt-2 text-sm text-slate-600">INR ${s.base_price}</p>
+            <p class="mt-2 text-xs text-slate-400 break-all">${s.image_url || "No image URL"}</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button class="text-xs px-2 py-1 rounded ${
-              s.is_active ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
-            }" data-toggle-service="${s.id}" data-active="${s.is_active}">
+          <div class="option-actions">
+            <button class="${s.is_active ? "btn-secondary" : "btn-ghost"} px-3 py-2 text-xs" data-toggle-service="${s.id}" data-active="${s.is_active}">
               ${s.is_active ? "Active" : "Inactive"}
             </button>
-            <button class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700" data-edit-service="${s.id}">
-              Edit
-            </button>
-            <button class="text-xs px-2 py-1 rounded bg-red-100 text-red-700" data-delete-service="${s.id}">
-              Delete
-            </button>
+            <button class="btn-ghost px-3 py-2 text-xs" data-edit-service="${s.id}">Edit</button>
+            <button class="btn-danger px-3 py-2 text-xs" data-delete-service="${s.id}">Delete</button>
           </div>
         </div>
-        <div class="mt-3 hidden border-t pt-3" data-service-edit-form="${s.id}">
-          <div class="grid grid-cols-1 gap-2">
-            <input class="border rounded p-2 text-sm" data-service-edit-name="${s.id}" placeholder="Service name" />
-            <textarea class="border rounded p-2 text-sm" rows="2" data-service-edit-description="${s.id}" placeholder="Description"></textarea>
-            <input type="number" step="0.01" class="border rounded p-2 text-sm" data-service-edit-price="${s.id}" placeholder="Base price" />
-            <input class="border rounded p-2 text-sm" data-service-edit-image="${s.id}" placeholder="Image URL (https://...)" />
-            <div class="flex flex-col sm:flex-row gap-2">
-              <input type="file" accept="image/*" class="border rounded p-2 text-sm w-full" data-service-edit-file="${s.id}" />
-              <button type="button" class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-xs" data-service-edit-upload="${s.id}">
+        <div class="mt-4 hidden border-t border-slate-200 pt-4" data-service-edit-form="${s.id}">
+          <div class="grid grid-cols-1 gap-3">
+            <input class="input-modern text-sm" data-service-edit-name="${s.id}" placeholder="Service name" />
+            <textarea class="textarea-modern text-sm" rows="2" data-service-edit-description="${s.id}" placeholder="Description"></textarea>
+            <input type="number" step="0.01" class="input-modern text-sm" data-service-edit-price="${s.id}" placeholder="Base price" />
+            <input class="input-modern text-sm" data-service-edit-image="${s.id}" placeholder="Image URL (https://...)" />
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
+              <input type="file" accept="image/*" class="input-modern text-sm" data-service-edit-file="${s.id}" />
+              <button type="button" class="btn-ghost px-3 py-2 text-xs" data-service-edit-upload="${s.id}">
                 Upload Image
               </button>
             </div>
           </div>
-          <div class="mt-2 flex items-center gap-2">
-            <button class="text-xs px-3 py-1.5 rounded bg-slate-900 text-white" data-save-service-edit="${s.id}">
-              Save
-            </button>
-            <button class="text-xs px-3 py-1.5 rounded bg-slate-200 text-slate-700" data-cancel-service-edit="${s.id}">
-              Cancel
-            </button>
-          </div>
+          ${editorActions("data-save-service-edit", "data-cancel-service-edit", s.id)}
         </div>
       `;
       servicesList.appendChild(li);
 
-      const nameInput = li.querySelector(`[data-service-edit-name="${s.id}"]`);
-      const descInput = li.querySelector(`[data-service-edit-description="${s.id}"]`);
-      const priceInput = li.querySelector(`[data-service-edit-price="${s.id}"]`);
-      const imageInput = li.querySelector(`[data-service-edit-image="${s.id}"]`);
-      if (nameInput) nameInput.value = s.name || "";
-      if (descInput) descInput.value = s.description || "";
-      if (priceInput) priceInput.value = s.base_price || "";
-      if (imageInput) imageInput.value = s.image_url || "";
+      li.querySelector(`[data-service-edit-name="${s.id}"]`).value = s.name || "";
+      li.querySelector(`[data-service-edit-description="${s.id}"]`).value = s.description || "";
+      li.querySelector(`[data-service-edit-price="${s.id}"]`).value = s.base_price || "";
+      li.querySelector(`[data-service-edit-image="${s.id}"]`).value = s.image_url || "";
     });
 
     bindServiceToggles();
@@ -282,7 +258,7 @@
 
   function bindCategoryEdits() {
     document.querySelectorAll("[data-edit-category]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-edit-category");
         const form = document.querySelector(`[data-category-edit-form="${id}"]`);
         if (!form) return;
@@ -305,8 +281,7 @@
         if (selectedFile) {
           try {
             image_url = (await uploadImageFile(selectedFile)) || "";
-            const input = document.querySelector(`[data-category-edit-image="${id}"]`);
-            if (input) input.value = image_url;
+            document.querySelector(`[data-category-edit-image="${id}"]`).value = image_url;
           } catch (err) {
             categoryError.textContent = err.message || "Image upload failed";
             categoryError.classList.remove("hidden");
@@ -369,11 +344,8 @@
     document.querySelectorAll("[data-delete-category]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-delete-category");
-        const ok = confirm("Delete this category? This will also remove its services.");
-        if (!ok) return;
-        await authFetch(`/api/services/admin/categories/${id}/`, {
-          method: "DELETE",
-        });
+        if (!window.confirm("Delete this category? This will also remove its services.")) return;
+        await authFetch(`/api/services/admin/categories/${id}/`, { method: "DELETE" });
         refreshLists();
       });
     });
@@ -396,7 +368,7 @@
 
   function bindServiceEdits() {
     document.querySelectorAll("[data-edit-service]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-edit-service");
         const form = document.querySelector(`[data-service-edit-form="${id}"]`);
         if (!form) return;
@@ -420,8 +392,7 @@
         if (selectedFile) {
           try {
             image_url = (await uploadImageFile(selectedFile)) || "";
-            const input = document.querySelector(`[data-service-edit-image="${id}"]`);
-            if (input) input.value = image_url;
+            document.querySelector(`[data-service-edit-image="${id}"]`).value = image_url;
           } catch (err) {
             serviceError.textContent = err.message || "Image upload failed";
             serviceError.classList.remove("hidden");
@@ -476,11 +447,8 @@
     document.querySelectorAll("[data-delete-service]").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-delete-service");
-        const ok = confirm("Delete this service?");
-        if (!ok) return;
-        await authFetch(`/api/services/admin/services/${id}/`, {
-          method: "DELETE",
-        });
+        if (!window.confirm("Delete this service?")) return;
+        await authFetch(`/api/services/admin/services/${id}/`, { method: "DELETE" });
         refreshLists();
       });
     });
@@ -558,9 +526,7 @@
       if (selectedFile) {
         try {
           image_url = (await uploadImageFile(selectedFile)) || "";
-          if (serviceImageUrlInput) {
-            serviceImageUrlInput.value = image_url;
-          }
+          if (serviceImageUrlInput) serviceImageUrlInput.value = image_url;
         } catch (err) {
           serviceError.textContent = err.message || "Image upload failed";
           serviceError.classList.remove("hidden");
@@ -606,9 +572,7 @@
       serviceImageUploadBtn.textContent = "Uploading...";
       try {
         const url = await uploadImageFile(file);
-        if (url && serviceImageUrlInput) {
-          serviceImageUrlInput.value = url;
-        }
+        if (url && serviceImageUrlInput) serviceImageUrlInput.value = url;
       } catch (err) {
         serviceError.textContent = err.message || "Image upload failed";
         serviceError.classList.remove("hidden");

@@ -3,58 +3,71 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="flex justify-center mt-20">
-  <div class="bg-white p-8 rounded-xl shadow w-full max-w-md">
+<section class="auth-shell">
+  <div class="page-hero auth-hero">
+    <span class="eyebrow">Service Booking Platform</span>
+    <h1 class="mt-6 text-4xl font-extrabold leading-tight md:text-5xl">Manage bookings, providers, and customer updates from one clean workspace.</h1>
+    <p class="mt-4 max-w-xl text-sm leading-7 text-slate-200 md:text-base">
+      Sign in to track jobs, confirm bookings, manage services, and keep every customer touchpoint in one place.
+    </p>
 
-    <h2 class="text-2xl font-semibold text-center mb-6">
-      Login
-    </h2>
-
-    <form id="login-form" class="space-y-4">
-      <input id="username" placeholder="Username"
-        class="w-full border px-3 py-2 rounded-lg">
-
-      <input id="password" type="password" placeholder="Password"
-        class="w-full border px-3 py-2 rounded-lg">
-
-      <button class="w-full bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800 transition">
-        Login
-      </button>
-
-      <p id="error" class="text-red-500 text-center hidden"></p>
-    </form>
-
-    <div class="my-5 text-center text-sm text-slate-400">OR</div>
-
-    <form id="otp-login-form" class="space-y-3">
-      <input id="otp-phone" placeholder="Mobile Number"
-        class="w-full border px-3 py-2 rounded-lg">
-
-      <div class="flex gap-2">
-        <input id="otp-code" placeholder="Enter OTP"
-          class="flex-1 border px-3 py-2 rounded-lg">
-        <button id="send-otp-btn" type="button"
-          class="px-3 bg-slate-900 text-white rounded-lg text-sm">
-          Send OTP
-        </button>
+    <div class="auth-hero-pattern">
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">Fast booking flow</p>
+        <p class="mt-2 text-lg font-bold">Customers can book, track, and review without leaving the platform.</p>
       </div>
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">Provider workspace</p>
+        <p class="mt-2 text-lg font-bold">Accept jobs, manage pricing, and update progress in real time.</p>
+      </div>
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">Admin control</p>
+        <p class="mt-2 text-lg font-bold">Monitor users, reviews, services, and booking assignments from one dashboard.</p>
+      </div>
+      <div class="auth-hero-card">
+        <p class="muted-label text-slate-300">Flexible access</p>
+        <p class="mt-2 text-lg font-bold">Use username and password or verify through OTP when needed.</p>
+      </div>
+    </div>
+  </div>
 
-      <button class="w-full bg-slate-800 text-white py-2 rounded-lg hover:bg-black transition">
-        Verify OTP & Login
-      </button>
+  <div class="auth-card">
+    <div class="mb-8">
+      <p class="muted-label">Welcome back</p>
+      <h2 class="auth-title mt-3 text-3xl font-bold text-slate-900">Login to your account</h2>
+      <p class="helper-text mt-2">Use your credentials or switch to OTP login for quick access.</p>
+    </div>
 
-      <p id="otp-info" class="text-slate-600 text-center text-sm hidden"></p>
-      <p id="otp-error" class="text-red-500 text-center hidden"></p>
+    <form id="login-form" class="auth-stack">
+      <input id="username" placeholder="Username" class="input-modern" />
+      <input id="password" type="password" placeholder="Password" class="input-modern" />
+      <button class="btn-primary w-full">Login</button>
+      <p id="error" class="status-text-error hidden text-center text-sm"></p>
     </form>
 
+    <div class="my-6 flex items-center gap-4">
+      <div class="h-px flex-1 bg-slate-200"></div>
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">OTP access</span>
+      <div class="h-px flex-1 bg-slate-200"></div>
+    </div>
+
+    <form id="otp-login-form" class="auth-stack">
+      <input id="otp-phone" placeholder="Mobile Number" class="input-modern" />
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
+        <input id="otp-code" placeholder="Enter OTP" class="input-modern" />
+        <button id="send-otp-btn" type="button" class="btn-secondary whitespace-nowrap">Send OTP</button>
+      </div>
+      <button class="btn-primary w-full">Verify OTP &amp; Login</button>
+      <p id="otp-info" class="helper-text hidden text-center"></p>
+      <p id="otp-error" class="status-text-error hidden text-center text-sm"></p>
+    </form>
+
+    <p class="mt-7 text-center text-sm text-slate-500">
+      Don't have an account?
+      <a href="/register/" class="link-inline">Create one</a>
+    </p>
   </div>
-</div>
-<p class="text-center text-sm mt-4 text-gray-600">
-  Don’t have an account?
-  <a href="/register/" class="text-slate-900 font-semibold">
-    Create one
-  </a>
-</p>
+</section>
 
 <script src="{% static 'js/auth.js' %}?v=3"></script>
 {% endblock %}

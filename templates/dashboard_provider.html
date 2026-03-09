@@ -1,127 +1,114 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Provider Dashboard{% endblock %}
+
 {% block content %}
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-  .provider-font { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui; }
-  .provider-bg {
-    background:
-      radial-gradient(950px 330px at 8% -12%, #dbeafe 0%, transparent 58%),
-      radial-gradient(950px 330px at 92% -12%, #bfdbfe 0%, transparent 58%),
-      linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  }
-  .tab-btn.active {
-    background: #0f172a;
-    color: #ffffff;
-    border-color: #0f172a;
-  }
-</style>
-
-<div class="provider-font provider-bg rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
-    <div>
-      <p class="text-sm uppercase tracking-widest text-slate-500">Provider Panel</p>
-      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">Work Center</h2>
-      <p class="text-slate-600 mt-2">Manage your jobs, status updates, and services in one place.</p>
+<section class="page-section">
+  <div class="page-hero p-6 md:p-8">
+    <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div>
+        <span class="eyebrow">Provider workspace</span>
+        <h1 class="hero-title mt-5 text-3xl font-extrabold tracking-tight md:text-5xl">Manage bookings, accepted jobs, and service pricing from one control surface.</h1>
+        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">Your provider dashboard keeps daily workload, live job statuses, and service pricing in a single operational flow.</p>
+      </div>
+      <div class="kpi-strip">
+        <span class="kpi-dot bg-sky-300"></span>
+        <span class="kpi-dot bg-indigo-300"></span>
+        <span class="kpi-dot bg-emerald-300"></span>
+      </div>
     </div>
-    <div class="h-2 w-40 rounded-full bg-gradient-to-r from-blue-600 to-indigo-500"></div>
   </div>
+</section>
 
-  <div class="flex flex-wrap gap-3 mb-8">
-    <button class="tab-btn active px-4 py-2 rounded-full border bg-white text-slate-700" data-provider-tab="overview">Overview</button>
-    <button class="tab-btn px-4 py-2 rounded-full border bg-white text-slate-700" data-provider-tab="bookings">Bookings</button>
-    <button class="tab-btn px-4 py-2 rounded-full border bg-white text-slate-700" data-provider-tab="services">Services</button>
-  </div>
-
-  <section id="provider-tab-overview">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-        <p class="text-slate-500 text-sm">Total</p>
-        <p id="provider-total-bookings" class="text-3xl font-bold mt-2 text-slate-900">0</p>
-      </div>
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-        <p class="text-slate-500 text-sm">Pending</p>
-        <p id="provider-pending-bookings" class="text-3xl font-bold mt-2 text-amber-600">0</p>
-      </div>
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-        <p class="text-slate-500 text-sm">Confirmed</p>
-        <p id="provider-confirmed-bookings" class="text-3xl font-bold mt-2 text-blue-600">0</p>
-      </div>
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-        <p class="text-slate-500 text-sm">In Progress</p>
-        <p id="provider-inprogress-bookings" class="text-3xl font-bold mt-2 text-indigo-600">0</p>
-      </div>
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-        <p class="text-slate-500 text-sm">Completed</p>
-        <p id="provider-completed-bookings" class="text-3xl font-bold mt-2 text-emerald-600">0</p>
-      </div>
+<section class="page-section">
+  <div class="page-shell dashboard-shell">
+    <div class="pill-nav mb-6">
+      <button class="tab-btn active" data-provider-tab="overview">Overview</button>
+      <button class="tab-btn" data-provider-tab="bookings">Bookings</button>
+      <button class="tab-btn" data-provider-tab="services">Services</button>
     </div>
 
-    <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm">
-      <h3 class="font-semibold text-slate-900 mb-3">Recent Jobs</h3>
-      <div id="provider-recent-bookings" class="space-y-3"></div>
-      <p id="provider-overview-empty" class="hidden text-slate-500">No recent jobs yet.</p>
-    </div>
-  </section>
-
-  <section id="provider-tab-bookings" class="hidden">
-    <div id="booking-list" class="space-y-4"></div>
-    <p id="empty" class="text-slate-500 hidden mt-4">No bookings yet</p>
-  </section>
-
-  <section id="provider-tab-services" class="hidden">
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-      <div class="xl:col-span-2 bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm h-fit">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold text-slate-900">Services You Provide</h3>
-          <span class="text-xs text-slate-500 uppercase tracking-widest">Manage</span>
+    <section id="provider-tab-overview">
+      <div class="dashboard-grid md:grid-cols-2 xl:grid-cols-5">
+        <div class="stat-card">
+          <p class="muted-label">Total</p>
+          <p id="provider-total-bookings" class="stat-value mt-3 text-slate-900">0</p>
         </div>
-        <p class="text-sm text-slate-600 mb-4">Add services and set your own price for each service.</p>
+        <div class="stat-card">
+          <p class="muted-label">Pending</p>
+          <p id="provider-pending-bookings" class="stat-value mt-3 text-amber-700">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="muted-label">Confirmed</p>
+          <p id="provider-confirmed-bookings" class="stat-value mt-3 text-sky-700">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="muted-label">In progress</p>
+          <p id="provider-inprogress-bookings" class="stat-value mt-3 text-indigo-700">0</p>
+        </div>
+        <div class="stat-card">
+          <p class="muted-label">Completed</p>
+          <p id="provider-completed-bookings" class="stat-value mt-3 text-emerald-700">0</p>
+        </div>
+      </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <div class="md:col-span-3">
-            <label for="provider-service-search" class="block text-xs uppercase tracking-widest text-slate-500 mb-1">Search Service</label>
-            <div class="flex gap-2">
-              <input
-                id="provider-service-search"
-                type="text"
-                class="w-full border rounded-lg px-3 py-2 bg-white"
-                placeholder="Type service name..."
-              />
-              <button id="provider-service-search-btn" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
-                Search
-              </button>
+      <div class="page-section">
+        <div class="page-shell content-inset">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <p class="muted-label">Recent jobs</p>
+              <h2 class="section-title mt-1 text-xl font-bold text-slate-900">Latest booking activity</h2>
             </div>
           </div>
-          <div class="md:col-span-2">
-            <label for="provider-service-picker" class="block text-xs uppercase tracking-widest text-slate-500 mb-1">Add Service</label>
-            <select id="provider-service-picker" class="w-full border rounded-lg px-3 py-2 bg-white"></select>
-          </div>
-          <div class="flex items-end">
-            <button id="provider-service-add" class="w-full bg-slate-900 text-white px-4 py-2 rounded-lg">Add Service</button>
-          </div>
-        </div>
-
-        <p id="provider-services-msg" class="text-sm text-slate-600 mb-3"></p>
-
-        <div id="provider-current-services" class="space-y-3"></div>
-      </div>
-
-      <div class="bg-white/90 rounded-2xl border border-slate-100 p-5 shadow-sm h-fit">
-        <h4 class="font-semibold text-slate-900 mb-2">Price Updates</h4>
-        <p class="text-sm text-slate-600 mb-3">Use this button after changing one or more prices.</p>
-        <button id="provider-prices-save" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-          Update Prices
-        </button>
-        <p id="provider-prices-msg" class="text-sm text-slate-600 mt-2"></p>
-        <div class="mt-4 text-xs text-slate-500">
-          Tip: Customer page shows the lowest provider price as "Starts from".
+          <div id="provider-recent-bookings" class="list-stack"></div>
+          <p id="provider-overview-empty" class="empty-panel hidden">No recent jobs yet.</p>
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
+
+    <section id="provider-tab-bookings" class="hidden">
+      <div id="booking-list" class="list-stack"></div>
+      <p id="empty" class="empty-panel hidden mt-4">No bookings yet.</p>
+    </section>
+
+    <section id="provider-tab-services" class="hidden">
+      <div class="split-grid xl:grid-cols-[minmax(0,2fr)_340px]">
+        <div class="page-shell content-inset">
+          <div class="mb-4">
+            <p class="muted-label">Service management</p>
+            <h2 class="section-title mt-1 text-xl font-bold text-slate-900">Services you provide</h2>
+            <p class="helper-text mt-2">Add services, remove them, and set your own prices.</p>
+          </div>
+
+          <div class="filter-grid md:grid-cols-[minmax(0,1fr)_120px] mb-4">
+            <input id="provider-service-search" type="text" class="input-modern" placeholder="Search service name..." />
+            <button id="provider-service-search-btn" class="btn-ghost">Search</button>
+          </div>
+
+          <div class="filter-grid md:grid-cols-[minmax(0,1fr)_160px] mb-4">
+            <select id="provider-service-picker" class="select-modern"></select>
+            <button id="provider-service-add" class="btn-primary">Add Service</button>
+          </div>
+
+          <p id="provider-services-msg" class="helper-text mb-4"></p>
+          <div id="provider-current-services" class="list-stack"></div>
+        </div>
+
+        <aside class="page-shell content-inset">
+          <p class="muted-label">Price updates</p>
+          <h3 class="section-title mt-1 text-xl font-bold text-slate-900">Save pricing</h3>
+          <p class="helper-text mt-3">After adjusting one or more prices, save them here.</p>
+          <button id="provider-prices-save" class="btn-primary mt-5 w-full">Update Prices</button>
+          <p id="provider-prices-msg" class="helper-text mt-3"></p>
+          <div class="mt-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+            Customer-facing service cards can display provider-specific pricing.
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+</section>
 
 <script src="{% static 'js/provider_dashboard.js' %}?v=3"></script>
 {% endblock %}

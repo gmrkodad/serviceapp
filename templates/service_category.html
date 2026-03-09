@@ -1,93 +1,76 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Service Category{% endblock %}
+
 {% block content %}
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-  .svc-font { font-family: 'Manrope', ui-sans-serif, system-ui; }
-  .svc-hero {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #d4d4d8;
-    border-radius: 26px;
-    background: linear-gradient(120deg, #0f172a 0%, #1e293b 55%, #374151 100%);
-    color: #fff;
-  }
-  .svc-hero-image {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.2;
-  }
-  .svc-hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(2, 6, 23, 0.8), rgba(30, 41, 59, 0.55));
-  }
-</style>
-<section class="svc-font">
-  <div class="svc-hero px-6 py-7 md:px-8 md:py-10 mb-7 shadow-lg">
-    <div id="category-hero-image" class="svc-hero-image"></div>
-    <div class="svc-hero-overlay"></div>
-    <div class="absolute -top-16 -right-14 h-56 w-56 rounded-full bg-white/20 blur-3xl"></div>
-    <div class="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-white/10 blur-3xl"></div>
-    <div class="relative flex items-center gap-4">
+<section class="page-section">
+  <div class="page-hero px-6 py-7 md:px-8 md:py-10">
+    <div id="category-hero-image" class="absolute inset-0 bg-cover bg-center opacity-20"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/70 to-slate-800/55"></div>
+    <div class="relative flex flex-col gap-5 md:flex-row md:items-center">
       <div
         id="category-icon"
-        class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-3xl border border-white/20"
+        class="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-3xl backdrop-blur"
       >
         ?
       </div>
       <div>
-        <h1 id="category-title" class="text-3xl md:text-4xl font-bold tracking-tight">Services</h1>
-        <p id="category-subtitle" class="text-slate-200 mt-1">
+        <h1 id="category-title" class="hero-title text-3xl font-bold tracking-tight md:text-4xl">Services</h1>
+        <p id="category-subtitle" class="mt-2 max-w-2xl text-sm text-slate-200 md:text-base">
           Pick a service card to view the best professionals nearby
         </p>
       </div>
     </div>
   </div>
+</section>
 
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+<section class="page-section">
+  <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
     <section class="xl:col-span-5">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold text-slate-900">Services</h2>
-          <span class="text-xs text-slate-500 uppercase tracking-widest">Select One</span>
+      <div class="page-shell content-inset h-full">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <p class="muted-label">Available services</p>
+            <h2 class="section-title mt-2 text-2xl font-bold text-slate-900">Choose a service</h2>
+          </div>
+          <span class="soft-chip bg-amber-50 text-amber-700">Select one</span>
         </div>
-        <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        <div id="services-grid" class="grid grid-cols-1 gap-3 sm:grid-cols-2"></div>
       </div>
     </section>
 
     <section class="xl:col-span-7">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4">
-        <div class="flex flex-col gap-3">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <h2 class="text-lg font-semibold text-slate-900">Available Professionals</h2>
-            <p id="selected-service-label" class="text-sm text-slate-500">Select a service</p>
+      <div class="page-shell content-inset mb-4">
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p class="muted-label">Professionals</p>
+              <h2 class="section-title mt-2 text-2xl font-bold text-slate-900">Available providers</h2>
+            </div>
+            <p id="selected-service-label" class="helper-text">Select a service</p>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-            <select id="provider-sort" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <select id="provider-sort" class="select-modern text-sm">
               <option value="">Sort</option>
               <option value="price_asc">Lowest price</option>
               <option value="price_desc">Highest price</option>
               <option value="rating_desc">Highest rating</option>
             </select>
-            <select id="provider-min-rating" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+            <select id="provider-min-rating" class="select-modern text-sm">
               <option value="">Min rating</option>
               <option value="4.5">4.5+</option>
               <option value="4">4.0+</option>
               <option value="3.5">3.5+</option>
               <option value="3">3.0+</option>
             </select>
-            <input id="provider-max-price" type="number" min="1" placeholder="Max price" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <input id="provider-max-price" type="number" min="1" placeholder="Max price" class="input-modern text-sm" />
           </div>
         </div>
       </div>
 
-      <div id="providers-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-
-      <p id="empty" class="hidden text-slate-500 mt-4">No providers available for this service.</p>
+      <div id="providers-list" class="grid grid-cols-1 gap-4 md:grid-cols-2"></div>
+      <p id="empty" class="empty-panel mt-4 hidden">No providers available for this service.</p>
     </section>
   </div>
 </section>
