@@ -64,7 +64,6 @@ class BookingCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         requested_services = validated_data.pop("_requested_services", [])
         validated_data.pop("service_ids", None)
-        validated_data.pop("service", None)
 
         primary_service = requested_services[0]
         booking = Booking.objects.create(service=primary_service, **validated_data)
